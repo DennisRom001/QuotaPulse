@@ -1,0 +1,243 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   QuotaPulse layout layer (loaded last).
+
+   1. One scroll region (`.qp-scroll`) per surface, capped at the viewport
+      height, with a thin custom scrollbar — content is never clipped.
+   2. Provider cards built from wrapping flex rows + a grid for the quota
+      bars. Every text-bearing flex/grid child has `min-width: 0`, so titles,
+      percentages, badges, plans and costs shrink or wrap — never overlap.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── Scroll containers ── */
+.qp-shell {
+  height: 100%;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-layout {
+  max-height: 100vh;
+  min-height: 0;
+}
+
+.qp-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+/* Chromium/WebView2: styled 6px scrollbar. (Setting `scrollbar-width` would
+   make Chromium ignore these pseudo-elements, so it is only used as the
+   fallback for engines without them.) */
+.qp-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.qp-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.qp-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.28);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.qp-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+  background-clip: padding-box;
+}
+
+.qp-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .qp-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+  }
+}
+
+/* ── Overview grid: one column at 360px, more when the window is wider ── */
+.qp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
+}
+
+/* ── Provider card ── */
+.qp-card {
+  --widget-accent: 148 163 184;
+  position: relative;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 11px 12px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--widget-card-border);
+  background: var(--widget-card-shell);
+  box-shadow: var(--widget-card-shadow);
+  cursor: pointer;
+  isolation: isolate;
+  overflow: hidden;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.qp-card.glass-claude { --widget-accent: 217 119 87; }
+.qp-card.glass-codex { --widget-accent: 16 163 127; }
+.qp-card.glass-antigravity { --widget-accent: 79 107 237; }
+.qp-card.glass-cursor { --widget-accent: 124 140 255; }
+
+.qp-card::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(var(--widget-accent), 0.2), transparent 45%),
+    linear-gradient(90deg, rgba(var(--widget-accent), 0.12), transparent 60%);
+}
+
+.qp-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--widget-accent), 0.45);
+  box-shadow: var(--widget-card-shadow-hover);
+}
+
+.qp-card:focus-visible {
+  outline: 2px solid rgba(var(--widget-accent), 0.8);
+  outline-offset: 2px;
+}
+
+/* ── Widget mode: 2×2 provider grid that scrolls instead of squeezing ── */
+.widget-usage-grid.qp-scroll {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-auto-rows: max-content;
+  align-content: start;
+  align-items: start;
+}
+
+/* Cards size to their content (no clipping); the grid scrolls instead. */
+.widget-usage-grid.qp-scroll .widget-provider-card {
+  flex: none;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+/* ── Gemini source switching ── */
+
+/* Top bar: Antigravity status chip right after the Gemini icon. */
+.nav-source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  margin-left: -4px;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 1px solid var(--widget-card-panel-border);
+  background: var(--widget-card-chip-bg);
+  color: var(--text-secondary);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.nav-source-chip.is-selected {
+  border-color: rgba(79, 107, 237, 0.7);
+  color: var(--text-primary);
+  background: rgba(79, 107, 237, 0.22);
+}
+
+.nav-source-chip:focus-visible,
+.qp-source:focus-visible {
+  outline: 2px solid rgba(79, 107, 237, 0.8);
+  outline-offset: 1px;
+}
+
+.nav-source-dot,
+.qp-source-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Card: segmented source picker; wraps instead of overflowing. */
+.qp-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.qp-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 18px;
+  padding: 0 7px;
+  border-radius: 999px;
+  border: 1px solid var(--widget-card-panel-border);
+  background: var(--widget-card-panel-bg);
+  color: var(--text-secondary);
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.qp-source.is-selected {
+  border-color: rgba(var(--widget-accent), 0.75);
+  background: rgba(var(--widget-accent), 0.2);
+  color: var(--text-primary);
+}
+
+/* Header: LiteLLM Proxy status pill. */
+.nav-litellm {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: 16px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid var(--widget-card-panel-border);
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 1;
+  overflow: hidden;
+}
+
+.nav-litellm.is-up {
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.5);
+}

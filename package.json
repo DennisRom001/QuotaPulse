@@ -1,0 +1,47 @@
+{
+  "name": "quotapulse",
+  "private": true,
+  "version": "1.0.0",
+  "description": "QuotaPulse: real-time quota monitor for Claude, ChatGPT, Gemini, Cursor and LiteLLM Proxy.",
+  "author": "Dennis Romero",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DennisRom001/QuotaPulse.git"
+  },
+  "homepage": "https://github.com/DennisRom001/QuotaPulse",
+  "bugs": {
+    "url": "https://github.com/DennisRom001/QuotaPulse/issues"
+  },
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "node scripts/tauri.mjs",
+    "tauri:build": "tauri build",
+    "tauri:build:win": "tauri build --bundles nsis"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.4",
+    "@tauri-apps/plugin-notification": "^2.3.3",
+    "@tauri-apps/plugin-opener": "^2",
+    "@tauri-apps/plugin-process": "^2.4.0",
+    "@tauri-apps/plugin-store": "^2.4.2",
+    "@tauri-apps/plugin-updater": "^2.14.1",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.575.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "recharts": "^3.3.0",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.10.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "~5.8.3",
+    "vite": "^7.3.1"
+  }
+}

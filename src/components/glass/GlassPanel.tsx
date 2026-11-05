@@ -1,0 +1,38 @@
+import { CSSProperties, PropsWithChildren, useRef } from 'react';
+import { useSpecularHighlight } from '@/hooks/useSpecularHighlight';
+
+type Tint = 'claude' | 'codex' | 'antigravity' | 'cursor' | 'neutral';
+
+type GlassPanelProps = PropsWithChildren<{
+  className?: string;
+  tint?: Tint;
+  style?: CSSProperties;
+  onClick?: () => void;
+  title?: string;
+}>;
+
+const tintClass: Record<Tint, string> = {
+  claude: 'glass-claude',
+  codex: 'glass-codex',
+  antigravity: 'glass-antigravity',
+  cursor: 'glass-cursor',
+  neutral: '',
+};
+
+const GlassPanel = ({ children, className = '', tint = 'neutral', style, onClick, title }: GlassPanelProps) => {
+  const ref = useRef<HTMLDivElement>(null);
+  useSpecularHighlight(ref);
+  return (
+    <div
+      ref={ref}
+      className={`glass-panel ${tintClass[tint]} ${className}`.trim()}
+      style={style}
+      onClick={onClick}
+      title={title}
+    >
+      {children}
+    </div>
+  );
+};
+
+export default GlassPanel;

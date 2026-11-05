@@ -1,0 +1,93 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+.env
+.env.*
+!.env.example
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local AI tool state
+.claude/
+.codex/
+.gemini/
+.forge/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+SPEC_SWARM.md
+
+# Superpowers plugin state
+.superpowers/
+docs/superpowers/
+
+# Dev output captures
+tauri_dev_output.txt
+tauri_dev.log
+
+# App-runtime artifacts
+last_panic.log
+**/auth.json.tmp
+
+# Rust / Tauri build output
+src-tauri/target/
+src-tauri/gen/
+
+# OS / dev screenshots
+screenshot.png
+
+# ── Python environments / caches (start-litellm.bat creates .venv) ──
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# ── Build output / binaries ──
+build/
+src-tauri/target/
+*.exe
+*.msi
+*.dll
+*.pdb
+
+# ── Credentials, tokens and keys (never commit) ──
+.credentials.json
+*.credentials.json
+oauth_creds.json
+auth.json
+secrets.json
+.env
+.env.local
+.env.*.local
+*.pfx
+*.p12
+*.pem
+*.key
+*.crt
+*.cer
+
+# ── Logs / temp / OS files ──
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

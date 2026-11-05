@@ -1,0 +1,88 @@
+# Builds, signs and publishes a QuotaPulse release when a version tag is pushed.
+#
+#   git tag v1.0.1 && git push origin v1.0.1
+#
+# The tag must match "version" in src-tauri/tauri.conf.json. The job builds the
+# Windows installers (NSIS + MSI), signs the update bundles with the updater
+# key, generates latest.json and publishes everything as a GitHub Release.
+# Installed copies of QuotaPulse then find the update at
+# https://github.com/DennisRom001/QuotaPulse/releases/latest/download/latest.json
+#
+# Required repository secrets:
+#   TAURI_SIGNING_PRIVATE_KEY           contents of the updater private key
+#   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  its password (must not be empty)
+#
+# GitHub Actions is free for public repositories.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check tag matches the app version
+        shell: pwsh
+        run: |
+          $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          if ("v$version" -ne "${{ github.ref_name }}") {
+            Write-Error "Tag ${{ github.ref_name }} does not match tauri.conf.json version $version"
+            exit 1
+          }
+
+      - name: Check updater signing key is configured
+        shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if (-not $env:TAURI_SIGNING_PRIVATE_KEY -or -not $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD) {
+            Write-Error "Secrets TAURI_SIGNING_PRIVATE_KEY and TAURI_SIGNING_PRIVATE_KEY_PASSWORD are required (see BUILDING.md)."
+            exit 1
+          }
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install JS dependencies (includes the Tauri CLI)
+        run: npm ci
+
+      - name: Build, sign and publish the release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          # The key must have a non-empty password: Windows cannot pass an empty
+          # environment variable, and a password-less key then fails to decode.
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: QuotaPulse ${{ github.ref_name }}
+          releaseBody: |
+            Windows installers for QuotaPulse ${{ github.ref_name }}.
+            Existing installations update themselves (Settings → Startup → update checks).
+          releaseDraft: false
+          prerelease: false
+          includeUpdaterJson: true
+          # Turns on updater artifacts (signed bundles + latest.json) for
+          # release builds only; local builds don't need the private key.
+          args: --config src-tauri/tauri.release.conf.json

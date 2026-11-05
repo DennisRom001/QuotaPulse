@@ -1,0 +1,758 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   QuotaPulse design system (loaded last).
+
+   One matte, low-saturation visual language for every screen:
+   * tokens  — neutral surfaces, 1px hairline borders, slate secondary text,
+               a softened emerald for LIVE, indigo for ACTIVE / selection,
+               muted amber/red only for warnings;
+   * shape   — 12px radius (rounded-xl), 16px card padding (p-4), 8px controls;
+   * no glows, gradients, inner shadows or backdrop blur;
+   * thin 6px progress bars with fully rounded ends.
+
+   Earlier stylesheets keep their layout rules; this layer re-points their
+   colour variables at these tokens and neutralises decorative effects, so
+   Dashboard, Projects, provider detail, Compare, Settings and widget mode
+   all share the same look.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root,
+html[data-theme='dark'] {
+  --qp-bg: #0b0d10;
+  --qp-surface: #121418;
+  --qp-surface-2: #181b20;
+  --qp-surface-hover: #1c2026;
+  --qp-border: rgba(64, 64, 64, 0.5);        /* neutral-700/50 */
+  --qp-border-strong: rgba(82, 82, 91, 0.75);
+  --qp-text: #e5e7eb;
+  --qp-text-2: #cbd5e1;
+  --qp-muted: #94a3b8;                       /* slate-400 */
+  --qp-faint: #64748b;                       /* slate-500 */
+  --qp-track: rgba(148, 163, 184, 0.16);
+  --qp-live: #3fb68b;                        /* emerald-500, softened */
+  --qp-accent: #6366f1;                      /* indigo-500 */
+  --qp-active: #8b93f5;                      /* indigo-400, softened */
+  --qp-warn: #d1a256;                        /* amber, muted */
+  --qp-danger: #e07a7a;                      /* red, muted */
+  --qp-radius: 12px;
+  --qp-radius-sm: 8px;
+  --qp-pad: 16px;
+}
+
+html[data-theme='light'] {
+  --qp-bg: #f5f6f8;
+  --qp-surface: #ffffff;
+  --qp-surface-2: #f4f5f7;
+  --qp-surface-hover: #eef0f3;
+  --qp-border: rgba(212, 212, 216, 0.8);     /* neutral-300/80 */
+  --qp-border-strong: #c7cbd1;
+  --qp-text: #0f172a;
+  --qp-text-2: #334155;
+  --qp-muted: #64748b;
+  --qp-faint: #94a3b8;
+  --qp-track: rgba(100, 116, 139, 0.16);
+  --qp-live: #2f9e78;
+  --qp-active: #5b62e6;
+  --qp-warn: #b7832f;
+  --qp-danger: #c95f5f;
+  --toggle-track-off: rgba(100, 116, 139, 0.3);
+}
+
+/* Legacy variables re-pointed at the tokens. Declared for both themes so
+   these win over the per-theme values in glass.css. */
+:root,
+html[data-theme='dark'],
+html[data-theme='light'] {
+  --bg-base: var(--qp-bg);
+  --glass-bg: var(--qp-surface);
+  --glass-border: var(--qp-border);
+  --glass-shadow: none;
+  --text-primary: var(--qp-text);
+  --text-secondary: var(--qp-text-2);
+  --text-muted: var(--qp-muted);
+  --control-bg: var(--qp-surface-2);
+  --control-border-strong: var(--qp-border-strong);
+  --tooltip-bg: var(--qp-surface-2);
+  --tooltip-border: var(--qp-border);
+  --meter-track: var(--qp-track);
+  --toggle-track-on: var(--qp-accent);
+  --toggle-track-off: rgba(148, 163, 184, 0.28);
+  --claude-tint: transparent;
+  --codex-tint: transparent;
+  --antigravity-tint: transparent;
+  --cursor-tint: transparent;
+  --radius-lg: var(--qp-radius);
+  --radius-md: 10px;
+  --widget-card-shell: var(--qp-surface);
+  --widget-card-border: var(--qp-border);
+  --widget-card-shadow: none;
+  --widget-card-shadow-hover: none;
+  --widget-card-panel-bg: var(--qp-surface-2);
+  --widget-card-panel-border: var(--qp-border);
+  --widget-card-chip-bg: var(--qp-surface-2);
+  --widget-card-status-bg: transparent;
+  --widget-card-empty-bg: var(--qp-surface-2);
+  --widget-card-entry-bg: var(--qp-surface-2);
+  --widget-card-face: var(--qp-surface-2);
+  --widget-card-face-border: var(--qp-border);
+  --widget-card-face-shadow: none;
+  --widget-gauge-plate-fill: var(--qp-surface);
+  --widget-gauge-plate-stroke: var(--qp-border);
+  --widget-gauge-core-fill: var(--qp-surface-2);
+  --widget-gauge-core-stroke: var(--qp-border);
+  --widget-gauge-core-inner: transparent;
+  --widget-gauge-track-empty: var(--qp-track);
+}
+
+/* ── Base ── */
+body {
+  background: var(--qp-bg);
+  color: var(--qp-text);
+}
+
+/* ── Remove decorative effects everywhere ── */
+.glass-panel,
+.segment-bar,
+.nav-bar {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.glass-panel::before,
+.proj-card::after,
+.qp-card::after,
+.stg-provider-card::after,
+.nav-pill-tint-claude::before,
+.nav-pill-tint-codex::before,
+.nav-pill-tint-antigravity::before,
+.nav-pill-tint-cursor::before,
+.widget-card[class*='accent-']::after,
+.widget-activity-panel::after,
+.overview-card-v2::after,
+.pcard-root::after {
+  display: none !important;
+}
+
+/* ── Surfaces: one card style for every view ── */
+.glass-panel,
+.qp-card,
+.overview-card-v2,
+.proj-card,
+.stg-section,
+.stg-provider-card,
+.pcard-root,
+.widget-provider-card,
+.widget-activity-panel {
+  background: var(--qp-surface) !important;
+  border: 1px solid var(--qp-border) !important;
+  border-radius: var(--qp-radius) !important;
+  box-shadow: none !important;
+}
+
+.glass-panel,
+.qp-card,
+.stg-section {
+  padding: var(--qp-pad);
+}
+
+.qp-card:hover,
+.overview-card-v2:hover,
+.proj-card:hover,
+.widget-provider-card:hover {
+  transform: none !important;
+  background: var(--qp-surface-hover) !important;
+  border-color: var(--qp-border-strong) !important;
+}
+
+/* Inner panels (window chips, entries, sections inside a card). */
+.pcard-section,
+.overview-card-window,
+.widget-provider-window,
+.stg-metric,
+.proj-chip {
+  background: var(--qp-surface-2) !important;
+  border-color: var(--qp-border) !important;
+  box-shadow: none !important;
+}
+
+/* ── Header / navigation ── */
+.nav-bar {
+  background: var(--qp-bg);
+  border-bottom: 1px solid var(--qp-border);
+  padding: 10px 16px 8px;
+  gap: 8px;
+}
+
+.nav-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--qp-text);
+}
+
+.nav-pill {
+  color: var(--qp-muted);
+  border-radius: var(--qp-radius-sm);
+}
+
+.nav-pill:hover {
+  color: var(--qp-text);
+  background: var(--qp-surface-2);
+}
+
+.nav-pill-active,
+.nav-pill-active[class*='nav-pill-tint-'] {
+  color: var(--qp-text);
+  background: var(--qp-surface-2) !important;
+  border-color: var(--qp-border-strong) !important;
+  box-shadow: none !important;
+}
+
+.nav-action-btn,
+.qp-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--qp-radius-sm);
+  border: 1px solid var(--qp-border);
+  background: var(--qp-surface);
+  color: var(--qp-muted);
+  box-shadow: none;
+}
+
+.nav-action-btn:hover,
+.qp-icon-btn:hover {
+  color: var(--qp-text);
+  background: var(--qp-surface-2);
+  border-color: var(--qp-border-strong);
+}
+
+/* ── Buttons, inputs, pills ── */
+.glass-pill {
+  background: var(--qp-surface-2);
+  border: 1px solid var(--qp-border);
+  border-radius: var(--qp-radius-sm);
+  box-shadow: none;
+  color: var(--qp-text);
+}
+
+.glass-pill:hover {
+  border-color: var(--qp-border-strong);
+}
+
+/* ── Time-range selector (7d / 30d / 90d / Custom): one segmented control ── */
+.period-selector {
+  gap: 4px;
+  padding: 2px;
+  border-radius: var(--qp-radius-sm);
+  border: 1px solid var(--qp-border);
+  background: var(--qp-surface);
+  box-shadow: none;
+}
+
+.period-selector .period-selector-group .glass-pill,
+.period-selector .period-selector-custom .glass-pill {
+  min-height: 20px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--qp-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.period-selector .period-selector-group .glass-pill[aria-pressed='true'],
+.period-selector .period-selector-group .glass-pill.is-active,
+.period-selector .period-selector-group .glass-pill[data-active='true'] {
+  background: var(--qp-surface-2);
+  border-color: var(--qp-border-strong);
+  color: var(--qp-text);
+}
+
+.period-selector .period-selector-custom input {
+  font-size: 10px;
+}
+
+/* ── Badges & chips ── */
+.qp-badge,
+.overview-card-status-badge,
+.stg-badge {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.overview-card-reset,
+.pcard-reset,
+.widget-provider-reset {
+  background: var(--qp-surface-2) !important;
+  border-color: var(--qp-border) !important;
+  box-shadow: none !important;
+  color: var(--qp-text-2) !important;
+}
+
+/* ── Progress bars: 6px, fully rounded, no glow ── */
+.qp-bar,
+.usage-bar-track {
+  height: 6px !important;
+  border-radius: 9999px !important;
+  background: var(--qp-track) !important;
+  box-shadow: none !important;
+}
+
+.qp-bar-fill,
+.usage-bar-fill {
+  border-radius: 9999px !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* ── Scrollbar colour follows the tokens ── */
+.qp-scroll::-webkit-scrollbar-thumb {
+  background: var(--qp-track);
+  background-clip: padding-box;
+}
+
+.qp-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--qp-faint);
+  background-clip: padding-box;
+}
+
+/* ── Empty / error / loading states ── */
+.qp-state {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 28px var(--qp-pad);
+  text-align: center;
+  background: var(--qp-surface);
+  border: 1px solid var(--qp-border);
+  border-radius: var(--qp-radius);
+}
+
+.qp-state-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--qp-surface-2);
+  color: var(--qp-muted);
+}
+
+.qp-state-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--qp-text);
+}
+
+.qp-state-text {
+  max-width: 260px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--qp-muted);
+}
+
+.qp-state.is-error .qp-state-icon {
+  color: var(--qp-danger);
+}
+
+.qp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: var(--qp-radius-sm);
+  border: 1px solid var(--qp-border);
+  background: var(--qp-surface-2);
+  color: var(--qp-text);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qp-btn:hover {
+  border-color: var(--qp-border-strong);
+  background: var(--qp-surface-hover);
+}
+
+.qp-btn:focus-visible,
+.qp-icon-btn:focus-visible {
+  outline: 2px solid var(--qp-accent);
+  outline-offset: 2px;
+}
+
+/* Skeleton loading: same geometry as a provider card. */
+.qp-skeleton-list {
+  display: grid;
+  gap: 8px;
+}
+
+.qp-skeleton {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 8px 12px;
+  padding: var(--qp-pad);
+  background: var(--qp-surface);
+  border: 1px solid var(--qp-border);
+  border-radius: var(--qp-radius);
+}
+
+.qp-skel {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--qp-surface-2) 0%, var(--qp-surface-hover) 50%, var(--qp-surface-2) 100%);
+  background-size: 200% 100%;
+  animation: qp-skeleton 1.4s ease-in-out infinite;
+}
+
+.qp-skel-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  grid-row: span 2;
+}
+
+@keyframes qp-skeleton {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qp-skel {
+    animation: none;
+  }
+}
+
+/* Footer line under the dashboard. */
+.qp-footer {
+  margin-top: 12px;
+  padding: 4px 0 2px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--qp-faint);
+}
+
+/* ── Provider card (Dashboard) ───────────────────────────────────────────
+   360px:  [logo] Name 58%            Plan
+           [logo] 15.4M / 20M tokens  Resets in 2h 45m
+           ───────────── bar ─────────────
+   ≥440px: the bar moves between the text and the plan column. */
+.qp-pcard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.qp-pcard-main {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'logo title plan'
+    'logo sub   reset'
+    'bar  bar   bar';
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 3px;
+  min-width: 0;
+}
+
+.qp-pcard-logo {
+  grid-area: logo;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--qp-surface-2);
+  border: 1px solid var(--qp-border);
+}
+
+.qp-pcard-title {
+  grid-area: title;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.qp-pcard-name,
+.qp-pcard-pct {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--qp-text);
+  white-space: nowrap;
+}
+
+.qp-pcard-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qp-pcard-pct {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.qp-pcard-plan,
+.qp-pcard-reset {
+  justify-self: end;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.qp-pcard-plan {
+  grid-area: plan;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--qp-text-2);
+}
+
+.qp-pcard-sub {
+  grid-area: sub;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--qp-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.qp-pcard-reset {
+  grid-area: reset;
+  font-size: 11px;
+  color: var(--qp-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.qp-pcard-reset.is-warn {
+  color: var(--qp-warn);
+}
+
+.qp-pcard-bar {
+  grid-area: bar;
+  height: 6px;
+  margin-top: 8px;
+  border-radius: 9999px;
+  background: var(--qp-track);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.qp-pcard-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.35s ease;
+}
+
+@container (min-width: 440px) {
+  .qp-pcard-main {
+    grid-template-columns: 32px minmax(0, 1fr) minmax(80px, 32%) auto;
+    grid-template-areas:
+      'logo title bar plan'
+      'logo sub   bar reset';
+  }
+
+  .qp-pcard-bar {
+    margin-top: 0;
+    align-self: center;
+  }
+}
+
+.qp-pcard-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+  min-width: 0;
+}
+
+.qp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qp-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Gemini source selector, restyled to the shared segmented look. */
+.qp-source {
+  min-height: 20px;
+  border-radius: 6px !important;
+  background: transparent !important;
+  border-color: var(--qp-border) !important;
+  color: var(--qp-muted) !important;
+  font-weight: 600;
+}
+
+.qp-source.is-selected {
+  background: var(--qp-surface-2) !important;
+  border-color: var(--qp-border-strong) !important;
+  color: var(--qp-text) !important;
+}
+
+.qp-card:focus-visible {
+  outline: 2px solid var(--qp-accent);
+  outline-offset: 2px;
+}
+
+/* ── Status dots: token colours, no glow or pulsing ── */
+.nav-pill-dot,
+.nav-tab-dot {
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+.nav-pill-dot.health-active,
+.nav-tab-dot.health-active { background: var(--qp-live) !important; }
+.nav-pill-dot.health-waiting,
+.nav-tab-dot.health-waiting { background: var(--qp-warn) !important; }
+.nav-pill-dot.health-error,
+.nav-tab-dot.health-error { background: var(--qp-danger) !important; }
+.nav-pill-dot.health-unknown,
+.nav-tab-dot.health-unknown { background: var(--qp-faint) !important; opacity: 1; }
+
+/* ── Legacy bar fills ── */
+.usage-bar-fill.bar-green { background: var(--qp-live) !important; }
+.usage-bar-fill.bar-yellow { background: var(--qp-warn) !important; }
+.usage-bar-fill.bar-red { background: var(--qp-danger) !important; }
+
+/* ── Window controls: neutral icon buttons instead of coloured dots ── */
+.window-btn {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--qp-radius-sm);
+  border: 1px solid var(--qp-border);
+  background: var(--qp-surface) !important;
+  color: var(--qp-muted);
+  opacity: 1;
+}
+
+.window-btn::before {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.window-btn-minimize::before { content: '\2013'; }
+.window-btn-close::before { content: '\00d7'; font-size: 16px; }
+
+.window-btn:hover {
+  color: var(--qp-text);
+  background: var(--qp-surface-2) !important;
+  border-color: var(--qp-border-strong);
+}
+
+.window-btn-close:hover {
+  color: #ffffff;
+  background: var(--qp-danger) !important;
+  border-color: transparent;
+}
+
+.nav-traffic-lights {
+  gap: 6px;
+}
+
+/* ── Header chips (LiteLLM, Antigravity) on the token palette ── */
+.nav-litellm,
+.nav-source-chip {
+  border-color: var(--qp-border) !important;
+  background: transparent !important;
+}
+
+.nav-litellm.is-up {
+  color: var(--qp-live) !important;
+}
+
+.nav-source-chip.is-selected {
+  background: var(--qp-surface-2) !important;
+  border-color: var(--qp-border-strong) !important;
+  color: var(--qp-text) !important;
+}
+
+/* Cards without figures: the explanation wraps instead of being cut. */
+.qp-pcard-sub.is-note {
+  grid-column: sub-start / reset-end;
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.4;
+}
+
+/* ── Settings: refresh-interval cards on the neutral palette ── */
+.stg-cadence-card-active {
+  background: var(--qp-surface-2) !important;
+  border-color: var(--qp-accent) !important;
+  box-shadow: none !important;
+}
+
+.stg-cadence-bar {
+  background: var(--qp-track) !important;
+  box-shadow: none !important;
+}
+
+.stg-cadence-card-active .stg-cadence-bar {
+  background: var(--qp-active) !important;
+}
+
+/* ── Update banner / About update state ── */
+.qp-update {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 16px 0;
+  padding: 8px 12px;
+  border-radius: var(--qp-radius-sm);
+  border: 1px solid var(--qp-border);
+  background: var(--qp-surface);
+  min-width: 0;
+}
+
+.qp-update-text {
+  flex: 1 1 140px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--qp-text-2);
+}
+
+.qp-btn-accent {
+  background: var(--qp-accent);
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.qp-btn-accent:hover {
+  background: var(--qp-accent);
+  filter: brightness(1.08);
+}
+
+.abt-update-state {
+  align-self: center;
+  font-size: 10px;
+  color: var(--qp-muted);
+}

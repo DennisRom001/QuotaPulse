@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/quotapulse-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuotaPulse</title>
+    <!--
+      Global startup error trap. Lives in public/boot.js rather than inline so
+      the app satisfies `script-src 'self'` (see app.security.csp in
+      tauri.conf.json). Must stay a classic, non-defer script so it runs before
+      the module bundle below.
+    -->
+    <script src="/boot.js"></script>
+  </head>
+
+  <body>
+    <!--
+      #qp-boot is a CSS-independent placeholder (inline dark styles) so the
+      window is never pure white before the bundle paints. React replaces the
+      contents of #root on mount, removing it.
+    -->
+    <div id="root">
+      <div
+        id="qp-boot"
+        style="font-family: ui-monospace, Menlo, monospace; background: #0b1620; color: #9fb3c2; height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; font-size: 13px;"
+      >
+        Loading QuotaPulse…
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

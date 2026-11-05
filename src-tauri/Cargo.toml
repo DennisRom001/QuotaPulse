@@ -1,0 +1,71 @@
+[package]
+name = "quotapulse"
+version = "1.0.0"
+description = "Real-time quota monitor for Claude, ChatGPT, Gemini, Cursor and LiteLLM Proxy"
+authors = ["Dennis Romero"]
+license = "MIT"
+repository = "https://github.com/DennisRom001/QuotaPulse"
+homepage = "https://github.com/DennisRom001/QuotaPulse"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "quotapulse_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri-plugin-store = "2.4.2"
+tauri-plugin-notification = "2.3.3"
+# Signed auto-updates from GitHub Releases (see .github/workflows/release.yml).
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+notify = "6.1.1"
+tokio = { version = "1.49.0", features = ["full"] }
+futures-util = "0.3.32"
+image = { version = "0.25", default-features = false, features = ["png"] }
+dirs = "5"
+async-trait = "0.1.89"
+chrono = { version = "0.4.42", features = ["serde"] }
+# Direct HTTPS calls to official provider hosts (see src/providers/http.rs)
+# plus the loopback Antigravity language-server probe.
+reqwest = { version = "0.12.23", default-features = false, features = ["json", "rustls-tls"] }
+base64 = "0.22"
+# Read-only access to the CLI login some Claude Code builds keep in the OS credential store.
+keyring = { version = "3", features = ["windows-native", "apple-native", "sync-secret-service"] }
+rusqlite = { version = "0.37.0", features = ["bundled"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "registry"] }
+tracing-appender = "0.2"
+
+[target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winreg = "0.55"
+# Process list (Toolhelp32) to detect a running Cursor without spawning tasklist.
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_System_Diagnostics_ToolHelp"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+strip = true          # Strip debug symbols → smaller binary
+lto = true            # Link-time optimization → smaller + faster
+codegen-units = 1     # Max optimization (slower compile, smaller output)
+opt-level = "s"       # Optimize for size
+# `unwind` (not `abort`): a panic in a background task — provider fetch, log
+# parser, file watcher, poll scheduler — is then isolated by the tokio runtime
+# instead of aborting the entire process.
+panic = "unwind"
