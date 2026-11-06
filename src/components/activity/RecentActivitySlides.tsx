@@ -11,9 +11,9 @@ type RecentActivitySlidesProps = {
 
 const formatAge = (timestamp: string) => {
   const deltaMs = Date.now() - new Date(timestamp).getTime();
-  if (!Number.isFinite(deltaMs) || deltaMs < 0) return 'now';
+  if (!Number.isFinite(deltaMs) || deltaMs < 0) return 'ahora';
   const minutes = Math.floor(deltaMs / 60_000);
-  if (minutes < 1) return 'now';
+  if (minutes < 1) return 'ahora';
   if (minutes < 60) return `${minutes}m`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h`;
@@ -21,16 +21,16 @@ const formatAge = (timestamp: string) => {
   return `${days}d`;
 };
 
-const recentModelLabel = (entry: RecentActivityEntry) => entry.model ?? 'model unavailable';
+const recentModelLabel = (entry: RecentActivityEntry) => entry.model ?? 'modelo no disponible';
 
 const fallbackTerminalLabel = (entry?: RecentActivityEntry) => {
-  if (!entry) return 'local session';
+  if (!entry) return 'sesión local';
   if (entry.terminal_label) return entry.terminal_label;
   if (entry.cwd) {
     const parts = entry.cwd.split(/[\\/]/).filter(Boolean);
     return parts[parts.length - 1] ?? entry.cwd;
   }
-  return entry.session_id ? `session ${entry.session_id.slice(0, 6)}` : 'local session';
+  return entry.session_id ? `sesión ${entry.session_id.slice(0, 6)}` : 'sesión local';
 };
 
 const RecentActivitySlides = ({
@@ -91,7 +91,7 @@ const RecentActivitySlides = ({
                 </span>
                 <span
                   className={`glass-pill recent-activity-model recent-activity-model--${variant}`}
-                  title={entry.model ? `Model: ${entry.model}` : 'Model could not be detected for this conversation.'}
+                  title={entry.model ? `Modelo: ${entry.model}` : 'No se pudo detectar el modelo de esta conversación.'}
                 >
                   {recentModelLabel(entry)}
                 </span>
@@ -114,8 +114,8 @@ const RecentActivitySlides = ({
               type="button"
               className={`recent-activity-nav-btn recent-activity-nav-btn--${variant}`}
               onClick={goPrev}
-              aria-label="Show previous recent conversation"
-              title="Previous conversation"
+              aria-label="Mostrar conversación reciente anterior"
+              title="Conversación anterior"
             >
               <ChevronLeft size={iconSize} />
             </button>
@@ -126,8 +126,8 @@ const RecentActivitySlides = ({
               type="button"
               className={`recent-activity-nav-btn recent-activity-nav-btn--${variant}`}
               onClick={goNext}
-              aria-label="Show next recent conversation"
-              title="Next conversation"
+              aria-label="Mostrar siguiente conversación reciente"
+              title="Siguiente conversación"
             >
               <ChevronRight size={iconSize} />
             </button>
@@ -140,8 +140,8 @@ const RecentActivitySlides = ({
                 type="button"
                 className={`recent-activity-dot ${index === activeIndex ? 'is-active' : ''}`}
                 onClick={() => setActiveIndex(index)}
-                aria-label={`Show recent conversation ${index + 1}`}
-                title={`Conversation ${index + 1}`}
+                aria-label={`Mostrar conversación reciente ${index + 1}`}
+                title={`Conversación ${index + 1}`}
               />
             ))}
           </div>

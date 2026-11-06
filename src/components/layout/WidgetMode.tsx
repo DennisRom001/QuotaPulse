@@ -29,15 +29,15 @@ const widgetWindowLabel = (windowType?: WindowType) => {
     case 'seven_day':
       return '7D';
     case 'daily':
-      return 'DAY';
+      return 'DÍA';
     case 'monthly':
-      return 'MO';
+      return 'MES';
     case 'weekly':
-      return 'WK';
+      return 'SEM';
     case 'session':
       return 'SES';
     default:
-      return 'WIN';
+      return 'VEN';
   }
 };
 
@@ -92,7 +92,7 @@ const WidgetMode = ({
               className="nav-action-btn"
               onClick={onRefresh}
               disabled={refreshBusy}
-              title="Refresh all (Ctrl+R)"
+              title="Actualizar todo (Ctrl+R)"
             >
               <RefreshCw size={11} className={refreshBusy ? 'spin-icon' : ''} />
             </button>
@@ -103,14 +103,14 @@ const WidgetMode = ({
             <button
               className={`nav-pill ${screen === 'usage' ? 'nav-pill-active' : ''}`}
               onClick={() => setScreen('usage')}
-              title="Usage rings"
+              title="Anillos de uso"
             >
               <Gauge size={12} />
             </button>
             <button
               className={`nav-pill ${screen === 'activity' ? 'nav-pill-active' : ''}`}
               onClick={() => setScreen('activity')}
-              title="Recent conversations"
+              title="Conversaciones recientes"
             >
               <History size={12} />
             </button>
@@ -121,17 +121,17 @@ const WidgetMode = ({
             <button
               className="nav-action-btn"
               onClick={onExpand}
-              title="Expand to full view"
+              title="Expandir a vista completa"
             >
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                 <path d="M1 9L9 1M9 1H3.5M9 1V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             <div className="nav-traffic-lights">
-              <button type="button" aria-label="Minimize" title="Minimize" className="window-btn window-btn-minimize"
+              <button type="button" aria-label="Minimizar" title="Minimizar" className="window-btn window-btn-minimize"
                 onClick={() => { if (isTauriRuntime()) getCurrentWindow().minimize(); }}
               />
-              <button type="button" aria-label="Close" title="Close" className="window-btn window-btn-close"
+              <button type="button" aria-label="Cerrar" title="Cerrar" className="window-btn window-btn-close"
                 onClick={() => { if (isTauriRuntime()) invoke('quit_app'); }}
               />
             </div>
@@ -148,7 +148,7 @@ const WidgetMode = ({
             const forecasts = allForecasts[id];
             const primaryPct = Math.max(0, Math.min(100, primary?.utilization ?? 0));
             const secondaryPct = secondary ? Math.max(0, Math.min(100, secondary.utilization ?? 0)) : undefined;
-            const emptyStateLabel = snapshot ? 'No quota figures' : access.health === 'error' ? 'Unavailable' : 'Awaiting';
+            const emptyStateLabel = snapshot ? 'Sin datos de cuota' : access.health === 'error' ? 'No disponible' : 'En espera';
 
             return (
               <GlassPanel

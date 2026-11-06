@@ -119,9 +119,14 @@ fn format_pct(pct: f64) -> String {
 fn badge_tooltip(provider: ProviderId, snapshot: &UsageSnapshot, primary: f64) -> String {
     let name = provider_name(provider);
     let resets = snapshot.windows.first().and_then(|w| format_reset(w.resets_at));
+    let approx = snapshot
+        .windows
+        .first()
+        .is_some_and(|w| matches!(w.accuracy, crate::usage::models::WindowAccuracy::Approximate));
+    let pct = format!("{}{}", if approx { "~" } else { "" }, format_pct(primary));
     match resets {
-        Some(r) => format!("{name} {} (Resets in {r})", format_pct(primary)),
-        None => format!("{name} {}", format_pct(primary)),
+        Some(r) => format!("{name} {pct} (Resets in {r})"),
+        None => format!("{name} {pct}"),
     }
 }
 
@@ -148,7 +153,11 @@ pub fn build_badges(mode: TrayTitleMode, snapshots: &[UsageSnapshot]) -> Vec<Pro
     ProviderId::all()
         .into_iter()
         .filter_map(|provider| {
-            let snapshot = snapshots.iter().find(|s| s.provider == provider)?;
+            // No quota window (e.g. Cursor with an encrypted session): no
+            // badge, rather than a misleading empty 0% arc.
+            let snapshot = snapshots
+                .iter()
+                .find(|s| s.provider == provider && !s.windows.is_empty())?;
             let primary = snapshot_percent(snapshot);
             let secondary = snapshot.windows.get(1).map(|w| w.utilization);
             let active = crate::watchers::activity::is_active(

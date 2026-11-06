@@ -20,7 +20,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   // React passes whatever was thrown, which is not always an Error.
   static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
     const message = error instanceof Error ? error.message : error != null ? String(error) : '';
-    return { hasError: true, message: message || 'Unexpected UI error' };
+    return { hasError: true, message: message || 'Error inesperado en la interfaz' };
   }
 
   componentDidCatch(error: unknown) {

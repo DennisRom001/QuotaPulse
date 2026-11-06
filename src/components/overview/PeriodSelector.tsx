@@ -34,7 +34,7 @@ const PeriodSelector = () => {
           );
         })}
         <GlassPill active={trendCustom} onClick={() => { setTrendCustom(true); if (customDays <= 0 || customDays > 365) setCustomDays(14); }}>
-          Custom
+          Personalizado
         </GlassPill>
       </div>
 

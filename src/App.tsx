@@ -41,6 +41,8 @@ const App = () => {
   const trendDays = useSettingsStore((s) => s.resolveTrendDays());
   const notificationsEnabled = useSettingsStore((s) => s.notificationsEnabled);
   const trayTitleMode = useSettingsStore((s) => s.trayTitleMode);
+  const cursorPromptBudget = useSettingsStore((s) => s.cursorPromptBudget);
+  const cursorCycleStartDay = useSettingsStore((s) => s.cursorCycleStartDay);
 
   const isProviderPage = (target: PageId): target is ProviderId =>
     target === 'claude' || target === 'codex' || target === 'antigravity' || target === 'cursor';
@@ -186,6 +188,14 @@ const App = () => {
     );
   }, [settingsHydrated, notificationsEnabled]);
 
+  // Estimated Cursor usage is computed in the backend from local prompt counts.
+  useEffect(() => {
+    if (!settingsHydrated) return;
+    invoke('set_cursor_estimate', { monthlyPrompts: cursorPromptBudget, cycleStartDay: cursorCycleStartDay })
+      .then(() => refreshProvider('cursor'))
+      .catch((err) => console.warn('set_cursor_estimate sync failed', err));
+  }, [settingsHydrated, cursorPromptBudget, cursorCycleStartDay, refreshProvider]);
+
   useEffect(() => {
     if (!settingsHydrated) return;
     invoke('set_tray_title_mode', { mode: trayTitleMode }).catch((err) =>
@@ -241,9 +251,9 @@ const App = () => {
       return (
         <EmptyState
           onOpenSettings={() => setPage('settings')}
-          title="No usage data yet"
-          message="No provider returned usage statistics. Add credentials or verify local CLI logs."
-          ctaLabel="Open Settings"
+          title="Aún no hay datos de uso"
+          message="Ningún proveedor devolvió estadísticas de uso. Agrega credenciales o revisa los logs locales del CLI."
+          ctaLabel="Abrir ajustes"
         />
       );
     }

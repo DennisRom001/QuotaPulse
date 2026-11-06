@@ -9,10 +9,10 @@ import { APP_AUTHOR, APP_NAME, APP_REPO_URL, APP_VERSION } from '@/constants/app
 import { isTauriRuntime } from '@/utils/runtime';
 
 const signalCards = [
-  { label: 'Providers', value: 'Claude, ChatGPT, Gemini, Cursor', icon: Cpu },
-  { label: 'Surfaces', value: 'Widget + Dashboard', icon: LayoutDashboard },
-  { label: 'Coverage', value: 'Usage, prompts, health', icon: Activity },
-  { label: 'Version', value: `v${APP_VERSION}`, icon: Package },
+  { label: 'Proveedores', value: 'Claude, ChatGPT, Gemini, Cursor', icon: Cpu },
+  { label: 'Vistas', value: 'Widget + Panel', icon: LayoutDashboard },
+  { label: 'Cobertura', value: 'Uso, prompts, estado', icon: Activity },
+  { label: 'Versión', value: `v${APP_VERSION}`, icon: Package },
 ] as const;
 
 const openRepo = async () => {
@@ -45,23 +45,23 @@ const UpdateCheckButton = () => {
 
   const run = async () => {
     if (update) {
-      setState(`Installing v${update.version}…`);
+      setState(`Instalando v${update.version}…`);
       try {
-        await installUpdate(update, (pct) => setState(`Installing v${update.version}${pct != null ? ` · ${pct}%` : '…'}`));
+        await installUpdate(update, (pct) => setState(`Instalando v${update.version}${pct != null ? ` · ${pct}%` : '…'}`));
       } catch (e) {
-        setState(`Update failed: ${String(e)}`);
+        setState(`Error al actualizar: ${String(e)}`);
       }
       return;
     }
-    setState('Checking…');
+    setState('Buscando…');
     const result = await checkForUpdate();
     if (result.kind === 'available') {
       setUpdate(result.update);
-      setState(`v${result.update.version} is available`);
+      setState(`v${result.update.version} disponible`);
     } else if (result.kind === 'none') {
-      setState('You are on the latest version');
+      setState('Tienes la última versión');
     } else {
-      setState('No published release found yet');
+      setState('Aún no hay ninguna versión publicada');
     }
   };
 
@@ -69,7 +69,7 @@ const UpdateCheckButton = () => {
     <>
       <GlassButton variant="default" size="sm" onClick={run} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'center' }}>
         <RefreshCw size={12} />
-        {update ? `Install v${update.version} & restart` : 'Check for updates'}
+        {update ? `Instalar v${update.version} y reiniciar` : 'Buscar actualizaciones'}
       </GlassButton>
       {state && <span className="abt-update-state">{state}</span>}
     </>
@@ -93,8 +93,8 @@ const AboutPanel = () => (
       </p>
       <div className="abt-tags">
         <span className="stg-badge">Conexión directa</span>
-        <span className="stg-badge">Widget + Dashboard</span>
-        <span className="stg-badge">CLI History</span>
+        <span className="stg-badge">Widget + Panel</span>
+        <span className="stg-badge">Historial de CLI</span>
       </div>
     </div>
 
@@ -114,31 +114,31 @@ const AboutPanel = () => (
 
     {/* Project info */}
     <div className="abt-project-card">
-      <span className="abt-section-title">Project</span>
-      <span className="abt-maintainer">Developed by {APP_AUTHOR}</span>
+      <span className="abt-section-title">Proyecto</span>
+      <span className="abt-maintainer">Desarrollado por {APP_AUTHOR}</span>
       <p className="abt-project-desc">
-        Open source. Credentials stay on this machine; quota calls go straight to each provider.
+        Código abierto. Las credenciales no salen de este equipo; las consultas de cuota van directas a cada proveedor.
       </p>
       <div className="abt-version-row">
         <div className="abt-version-cell">
-          <span className="abt-version-label">Version</span>
+          <span className="abt-version-label">Versión</span>
           <span className="abt-version-value">{APP_VERSION}</span>
         </div>
         <div className="abt-version-cell">
-          <span className="abt-version-label">Track</span>
-          <span className="abt-version-value">Open source</span>
+          <span className="abt-version-label">Licencia</span>
+          <span className="abt-version-value">MIT</span>
         </div>
       </div>
       {APP_REPO_URL && (
         <GlassButton variant="primary" size="sm" onClick={openRepo} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'center' }}>
           <Github size={12} />
-          GitHub Repo
+          Repositorio en GitHub
         </GlassButton>
       )}
       <UpdateCheckButton />
       <GlassButton variant="default" size="sm" onClick={openLogFolder} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'center' }}>
         <FolderOpen size={12} />
-        Open log folder
+        Abrir carpeta de registros
       </GlassButton>
     </div>
   </div>

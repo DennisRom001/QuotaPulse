@@ -34,9 +34,9 @@ const LimitEta = ({ forecast, className, replacesReset = false, resetsAt }: Limi
   if (!forecast || !isLimitImminent(forecast)) return replacesReset ? reset : null;
 
   const eta = forecast.eta_to_full_secs ?? 0;
-  const rate = forecast.rate_per_hour != null ? `+${forecast.rate_per_hour.toFixed(1)}%/h over the last 30 min` : '';
-  const resets = forecast.resets_in_secs != null ? `resets in ${formatRemaining(forecast.resets_in_secs)}` : '';
-  const title = ['On pace to hit the limit before it resets', rate, resets].filter(Boolean).join(' · ');
+  const rate = forecast.rate_per_hour != null ? `+${forecast.rate_per_hour.toFixed(1)}%/h en los últimos 30 min` : '';
+  const resets = forecast.resets_in_secs != null ? `se reinicia en ${formatRemaining(forecast.resets_in_secs)}` : '';
+  const title = ['Al ritmo actual alcanzará el límite antes del reinicio', rate, resets].filter(Boolean).join(' · ');
 
   return (
     <span className={`${className} limit-eta`} data-urgency={etaUrgency(eta)} title={title}>

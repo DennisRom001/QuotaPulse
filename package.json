@@ -1,7 +1,7 @@
 {
   "name": "quotapulse",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "QuotaPulse: real-time quota monitor for Claude, ChatGPT, Gemini, Cursor and LiteLLM Proxy.",
   "author": "Dennis Romero",
   "repository": {

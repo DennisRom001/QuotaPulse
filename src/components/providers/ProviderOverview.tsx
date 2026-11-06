@@ -42,7 +42,7 @@ const ProviderOverview = ({
       />
     ))}
   </div>
-  <p className="qp-footer">Updated in real time · Direct to providers · No telemetry</p>
+  <p className="qp-footer">Actualizado en tiempo real · Directo a proveedores · Sin telemetría</p>
   </>
 );
 

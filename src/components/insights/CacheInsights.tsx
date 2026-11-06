@@ -72,8 +72,8 @@ const CacheInsights = ({ provider, refreshKey }: CacheInsightsProps) => {
   return (
     <div className="pcard-section-panel">
       <div className="pcard-section-head">
-        <span className="pcard-section-title">Caching</span>
-        <div className="pcard-cost-pills pcard-cache-toggle" role="group" aria-label="Show this month with or without caching">
+        <span className="pcard-section-title">Caché</span>
+        <div className="pcard-cost-pills pcard-cache-toggle" role="group" aria-label="Mostrar este mes con o sin caché">
           {(['cached', 'uncached'] as const).map((v) => (
             <button
               key={v}
@@ -82,7 +82,7 @@ const CacheInsights = ({ provider, refreshKey }: CacheInsightsProps) => {
               aria-pressed={view === v}
               onClick={() => setView(v)}
             >
-              {v === 'cached' ? 'Cached' : 'Uncached'}
+              {v === 'cached' ? 'Con caché' : 'Sin caché'}
             </button>
           ))}
         </div>
@@ -91,33 +91,33 @@ const CacheInsights = ({ provider, refreshKey }: CacheInsightsProps) => {
       <div className="pcard-cache-month">
         <span className="pcard-cache-amount">{formatUsd(shown)}</span>
         <span className="pcard-cache-sub">
-          this month {view === 'uncached' ? 'without caching' : 'with caching'} · range {formatUsd(low)}–{formatUsd(high)}
+          este mes {view === 'uncached' ? 'sin caché' : 'con caché'} · rango {formatUsd(low)}–{formatUsd(high)}
         </span>
       </div>
 
       <div className="pcard-cache-stats">
         <div
           className="pcard-cache-stat"
-          title="This month's cost without caching minus what it actually cost, write premium included"
+          title="Costo de este mes sin caché menos el costo real, incluido el recargo por escritura"
         >
-          <span className="pcard-cache-stat-k">{saved >= 0 ? 'Saved this month' : 'Caching cost extra'}</span>
+          <span className="pcard-cache-stat-k">{saved >= 0 ? 'Ahorro este mes' : 'Sobrecosto por caché'}</span>
           <span className="pcard-cache-stat-v">{formatUsd(Math.abs(saved))}</span>
         </div>
-        <div className="pcard-cache-stat" title="Cache reads over all prompt tokens, last 7 days">
-          <span className="pcard-cache-stat-k">7-day hit rate</span>
+        <div className="pcard-cache-stat" title="Lecturas de caché sobre el total de tokens de prompt, últimos 7 días">
+          <span className="pcard-cache-stat-k">Aciertos 7 días</span>
           <span className="pcard-cache-stat-v">{data.hit_ratio_7d != null ? pct(data.hit_ratio_7d) : '—'}</span>
         </div>
       </div>
 
       {breakEven != null && (
-        <span className="pcard-mix-hint" title="Assumes every cache miss is billed as a cache write">
-          {breakEven > 0 ? `Caching wins above ${pct(breakEven)} hit rate` : 'Caching always wins · no write premium'}
+        <span className="pcard-mix-hint" title="Supone que cada fallo de caché se cobra como escritura en caché">
+          {breakEven > 0 ? `La caché conviene sobre ${pct(breakEven)} de aciertos` : 'La caché siempre conviene · sin recargo de escritura'}
         </span>
       )}
 
       {projection != null && (
         <label className="pcard-cache-slider">
-          <span className="pcard-cache-slider-label">Assume {pct(hit)}</span>
+          <span className="pcard-cache-slider-label">Suponer {pct(hit)}</span>
           <span className="pcard-cache-track">
             <input
               type="range"
@@ -126,18 +126,18 @@ const CacheInsights = ({ provider, refreshKey }: CacheInsightsProps) => {
               step={1}
               value={Math.round(hit * 100)}
               onChange={(e) => setAssumed(Number(e.target.value) / 100)}
-              aria-label="Assumed cache hit rate"
+              aria-label="Tasa de aciertos de caché supuesta"
               style={{ ['--fill' as string]: `${hit * 100}%` }}
             />
             {breakEven != null && breakEven > 0 && (
-              <span className="pcard-cache-tick" style={{ left: `${breakEven * 100}%` }} title={`Break-even ${pct(breakEven)}`} />
+              <span className="pcard-cache-tick" style={{ left: `${breakEven * 100}%` }} title={`Punto de equilibrio ${pct(breakEven)}`} />
             )}
           </span>
           <span
             className="pcard-cache-slider-value"
-            title="Monthly saving at the last 7 days' average pace and the assumed hit rate, assuming every miss is a cache write"
+            title="Ahorro mensual al ritmo promedio de los últimos 7 días y la tasa de aciertos supuesta, suponiendo que cada fallo es una escritura en caché"
           >
-            ≈ {savingLabel(projection)}/mo
+            ≈ {savingLabel(projection)}/mes
           </span>
         </label>
       )}

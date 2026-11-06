@@ -62,12 +62,12 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
               className={`nav-litellm ${litellm.up ? 'is-up' : ''}`}
               title={
                 litellm.up
-                  ? `LiteLLM Proxy LIVE at ${litellm.base_url ?? '127.0.0.1:4000'} — ${
+                  ? `LiteLLM Proxy activo en ${litellm.base_url ?? '127.0.0.1:4000'} — ${
                       litellm.providers.length > 0
-                        ? `data for ${litellm.providers.length} provider(s)`
-                        : 'no routed traffic yet'
+                        ? `datos de ${litellm.providers.length} proveedor(es)`
+                        : 'aún sin tráfico enrutado'
                     }`
-                  : 'LiteLLM Proxy not running (starting it in the background if available)'
+                  : 'LiteLLM Proxy no está en ejecución (se inicia en segundo plano si está disponible)'
               }
             >
               <span className="nav-source-dot" style={{ background: litellm.up ? SOURCE_COLORS.live : SOURCE_COLORS.off }} />
@@ -81,24 +81,24 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
             className="nav-action-btn"
             onClick={onRefresh}
             disabled={refreshBusy}
-            title="Refresh all (Ctrl+R)"
+            title="Actualizar todo (Ctrl+R)"
           >
             <RefreshCw size={11} className={refreshBusy ? 'spin-icon' : ''} />
           </button>
           <button
             className="nav-action-btn"
             onClick={onWidget}
-            title="Switch to widget view"
+            title="Cambiar a vista widget"
           >
             <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
               <path d="M9 1H3.5M9 1V6.5M9 1L1 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" transform="rotate(180 5 5)"/>
             </svg>
           </button>
           <div className="nav-traffic-lights">
-            <button type="button" aria-label="Minimize" title="Minimize" className="window-btn window-btn-minimize"
+            <button type="button" aria-label="Minimizar" title="Minimizar" className="window-btn window-btn-minimize"
               onClick={() => { if (isTauriRuntime()) getCurrentWindow().minimize(); }}
             />
-            <button type="button" aria-label="Close" title="Close" className="window-btn window-btn-close"
+            <button type="button" aria-label="Cerrar" title="Cerrar" className="window-btn window-btn-close"
               onClick={() => { if (isTauriRuntime()) invoke('quit_app'); }}
             />
           </div>
@@ -111,14 +111,14 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
           <button
             className={`nav-pill ${activePage === 'overview' ? 'nav-pill-active' : ''}`}
             onClick={() => onNavigate('overview')}
-            title="Home"
+            title="Inicio"
           >
             <Home size={13} />
           </button>
           <button
             className={`nav-pill ${activePage === 'projects' ? 'nav-pill-active' : ''}`}
             onClick={() => onNavigate('projects')}
-            title="Projects"
+            title="Proyectos"
           >
             <FolderKanban size={13} />
           </button>
@@ -126,7 +126,7 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
             <button
               className={`nav-pill ${activePage === 'comparison' ? 'nav-pill-active' : ''}`}
               onClick={() => onNavigate('comparison')}
-              title="Compare sources"
+              title="Comparar fuentes"
             >
               <GitCompareArrows size={13} />
             </button>
@@ -153,9 +153,9 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
                     className={`nav-source-chip ${geminiSource === 'antigravity' ? 'is-selected' : ''}`}
                     onClick={toggleGeminiSource}
                     aria-pressed={geminiSource === 'antigravity'}
-                    title={`Antigravity: ${antigravitySource.badge}. Click to show ${
-                      geminiSource === 'antigravity' ? (hasDesktop ? 'the Gemini App' : 'the best source') : 'Antigravity'
-                    } on the Gemini card.`}
+                    title={`Antigravity: ${antigravitySource.badge}. Clic para mostrar ${
+                      geminiSource === 'antigravity' ? (hasDesktop ? 'la app de Gemini' : 'la mejor fuente') : 'Antigravity'
+                    } en la tarjeta de Gemini.`}
                   >
                     <span>AG</span>
                     <span
@@ -170,7 +170,7 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
           <button
             className={`nav-pill ${activePage === 'settings' ? 'nav-pill-active' : ''}`}
             onClick={() => onNavigate('settings')}
-            title="Settings (Ctrl+,)"
+            title="Ajustes (Ctrl+,)"
           >
             <Settings2 size={13} />
           </button>

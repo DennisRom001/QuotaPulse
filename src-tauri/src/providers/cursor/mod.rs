@@ -6,6 +6,13 @@
 //! Cursor's dashboard uses — for the plan's request usage this billing cycle.
 //! Cursor writes no per-request token logs to disk, so there is no local
 //! token history for this provider.
+//!
+//! Recent Cursor builds encrypt that token. Then the card falls back to
+//! [`local_activity`]: prompts, lines and model read from the same DB,
+//! read-only and without any network call.
+
+pub mod estimate;
+pub mod local_activity;
 
 use std::path::PathBuf;
 
@@ -241,25 +248,75 @@ fn snapshot_from(usage: CursorUsage, membership: Option<String>) -> UsageSnapsho
     }
 }
 
-/// Snapshot without usage figures (no fake 0% bar). When Cursor.exe is
-/// running the card says so with an "ACTIVE — LOCAL SESSION" badge.
+/// Snapshot without quota figures (no fake 0% bar). It carries what Cursor's
+/// state DB shows locally — prompts today, lines, model, plan — and, when
+/// Cursor.exe is running, an "ACTIVE — …" badge.
 fn placeholder(note: &str) -> UsageSnapshot {
     let running = cursor_running();
+    let activity = state_db_path()
+        .filter(|p| p.is_file())
+        .and_then(|p| match local_activity::read(&p) {
+            Ok(a) => Some(a),
+            Err(e) => {
+                tracing::debug!("[cursor] local activity unavailable: {e}");
+                None
+            }
+        });
+    let in_use = activity
+        .as_ref()
+        .is_some_and(|a| a.prompted_within(chrono::Duration::minutes(2)));
+    if in_use {
+        // Lets the tray arc and polling treat Cursor as active.
+        crate::watchers::activity::record(ProviderId::Cursor);
+    }
+    // Estimated plan usage, only when the user set or calibrated a budget.
+    let windows: Vec<UsageWindow> = activity
+        .as_ref()
+        .and_then(|a| estimate::estimate(a, estimate::config(), Utc::now()))
+        .map(|e| vec![estimate::window(&e)])
+        .unwrap_or_default();
+    let (tier, note) = match &activity {
+        // With an estimate the bar explains itself; the note is the activity.
+        Some(a) if !windows.is_empty() => (local_activity::plan_label(a), a.summary()),
+        Some(a) => (
+            local_activity::plan_label(a),
+            format!("{} — {note}", a.summary()),
+        ),
+        None => (
+            if running { "Cursor (open)" } else { "Cursor" }.to_string(),
+            note.to_string(),
+        ),
+    };
+    let badge = match (running, in_use) {
+        (true, true) => Some("ACTIVE — IN USE"),
+        (true, false) => Some("ACTIVE — LOCAL SESSION"),
+        _ => None,
+    };
     UsageSnapshot {
         provider: ProviderId::Cursor,
-        windows: Vec::new(),
+        windows,
         credits: None,
         plan: Some(PlanInfo {
-            tier: Some(if running { "Cursor (open)" } else { "Cursor" }.to_string()),
-            note: Some(note.to_string()),
+            tier: Some(tier),
+            note: Some(note),
         }),
         fetched_at: Utc::now(),
         source: DataSource::LocalLog,
         provenance: DataProvenance::DerivedLocal,
         stale: false,
-        badge: running.then(|| "ACTIVE — LOCAL SESSION".to_string()),
+        badge: badge.map(str::to_string),
         sources: Vec::new(),
     }
+}
+
+/// Budget that makes the local estimate match the percentage the user reads
+/// on cursor.com/dashboard. Blocking: call through `run_blocking`.
+pub fn calibrate_estimate(actual_percent: f64, cycle_start_day: u8) -> Result<u32, String> {
+    let path = state_db_path()
+        .filter(|p| p.is_file())
+        .ok_or("Cursor's state DB was not found")?;
+    let activity = local_activity::read(&path)?;
+    estimate::calibrate(&activity, actual_percent, cycle_start_day, Utc::now())
 }
 
 fn cursor_running() -> bool {
@@ -288,7 +345,7 @@ impl UsageProvider for CursorProvider {
             let reason = last_session_error();
             info!("[cursor] no usable session: {reason}");
             let note = if reason.contains("not decodable") {
-                "Cursor keeps its session encrypted on disk, so request counts cannot be read locally."
+                "plan quota unavailable: Cursor encrypts its session token"
             } else {
                 "Sign in to Cursor to see plan usage."
             };

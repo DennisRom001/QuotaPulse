@@ -1,6 +1,6 @@
 /** Skeleton list with the same geometry as the provider cards. */
 const LoadingState = ({ rows = 4 }: { rows?: number }) => (
-  <div className="qp-skeleton-list" aria-busy="true" aria-label="Loading usage">
+  <div className="qp-skeleton-list" aria-busy="true" aria-label="Cargando uso">
     {Array.from({ length: rows }, (_, i) => (
       <div key={i} className="qp-skeleton">
         <span className="qp-skel qp-skel-logo" />

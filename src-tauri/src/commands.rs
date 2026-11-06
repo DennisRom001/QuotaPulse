@@ -360,3 +360,23 @@ pub async fn get_litellm_status() -> Result<LitellmStatus, String> {
         },
     })
 }
+
+/// Budget and billing-cycle day for the estimated Cursor usage. A missing or
+/// zero budget turns the estimate off.
+#[tauri::command]
+pub fn set_cursor_estimate(monthly_prompts: Option<u32>, cycle_start_day: u8) {
+    crate::providers::cursor::estimate::set_config(crate::providers::cursor::estimate::EstimateConfig {
+        monthly_prompts,
+        cycle_start_day,
+    });
+}
+
+/// Compute the prompt budget that makes the estimate match the percentage
+/// shown on cursor.com/dashboard. Reads Cursor's state DB locally, read-only.
+#[tauri::command]
+pub async fn calibrate_cursor_estimate(actual_percent: f64, cycle_start_day: u8) -> Result<u32, String> {
+    crate::providers::run_blocking(move || {
+        crate::providers::cursor::calibrate_estimate(actual_percent, cycle_start_day)
+    })
+    .await?
+}

@@ -26,21 +26,21 @@ const providerMeta: Record<ProviderId, { label: string; tint: 'claude' | 'codex'
 };
 
 const WINDOW_NAMES: Record<string, string> = {
-  five_hour: '5-hour window',
-  seven_day: '7-day window',
-  daily: 'Daily quota',
-  monthly: 'Monthly quota',
-  weekly: 'Weekly quota',
-  session: 'Session window',
+  five_hour: 'Ventana de 5 h',
+  seven_day: 'Ventana de 7 días',
+  daily: 'Cuota diaria',
+  monthly: 'Cuota mensual',
+  weekly: 'Cuota semanal',
+  session: 'Ventana de sesión',
 };
 
 const WINDOW_SHORT: Record<string, string> = {
   five_hour: '5h',
   seven_day: '7d',
-  daily: 'Day',
-  monthly: 'Month',
-  weekly: 'Week',
-  session: 'Session',
+  daily: 'Día',
+  monthly: 'Mes',
+  weekly: 'Sem.',
+  session: 'Sesión',
 };
 
 const clampPct = (value?: number) => Math.max(0, Math.min(100, value ?? 0));
@@ -56,10 +56,13 @@ const usageLine = (primary?: UsageWindow, secondary?: UsageWindow): string => {
   if (!primary) return '';
   let main: string;
   if (primary.used != null && primary.limit != null && primary.accuracy !== 'percent_only') {
-    const unit = primary.unit === 'requests' ? 'requests' : primary.unit === 'tokens' ? 'tokens' : '';
+    const unit =
+      primary.unit === 'requests'
+        ? primary.accuracy === 'approximate' ? 'prompts (est.)' : 'solicitudes'
+        : primary.unit === 'tokens' ? 'tokens' : '';
     main = `${primary.accuracy === 'approximate' ? '~' : ''}${compact(primary.used)} / ${compact(primary.limit)} ${unit}`.trim();
   } else {
-    main = WINDOW_NAMES[primary.window_type] ?? 'Usage window';
+    main = WINDOW_NAMES[primary.window_type] ?? 'Ventana de uso';
   }
   if (secondary) {
     main += ` · ${WINDOW_SHORT[secondary.window_type] ?? ''} ${formatWindowPercent(secondary)}`;
@@ -122,11 +125,13 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
   const resetsAt = primary?.resets_at ? new Date(primary.resets_at).getTime() : 0;
   const resetSecs = resetsAt ? Math.round((resetsAt - now) / 1000) : 0;
   const timing = isLimitImminent(forecast)
-    ? { text: `Full in ${formatRemaining(forecast?.eta_to_full_secs ?? 0)}`, warn: true }
+    ? { text: `Lleno en ${formatRemaining(forecast?.eta_to_full_secs ?? 0)}`, warn: true }
     : resetSecs > 0
-      ? { text: `Resets in ${formatRemaining(resetSecs)}`, warn: false }
+      ? { text: `Se reinicia en ${formatRemaining(resetSecs)}`, warn: false }
       : undefined;
   const pct = clampPct(primary?.utilization);
+  // Cursor's activity summary sits on its own row under the estimate.
+  const showNote = provider === 'cursor' && primary?.accuracy === 'approximate' && !!planInfo?.note;
 
   return (
     <div
@@ -142,7 +147,7 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
       tabIndex={0}
       title={access.detail}
     >
-      <div className="qp-pcard-main">
+      <div className={`qp-pcard-main ${showNote ? 'has-note' : ''}`}>
         <span className="qp-pcard-logo">
           <ProviderLogo provider={provider} size={22} variant="widget-core" />
         </span>
@@ -154,8 +159,11 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
         <span className="qp-pcard-plan" title={planInfo?.note ?? plan}>{plan}</span>
 
         <span className={`qp-pcard-sub ${primary ? '' : 'is-note'}`}>
-          {primary ? usageLine(primary, secondary) : planInfo?.note || (access.health === 'error' ? 'Unavailable' : 'Awaiting data')}
+          {primary ? usageLine(primary, secondary) : planInfo?.note || (access.health === 'error' ? 'No disponible' : 'Esperando datos')}
         </span>
+        {showNote && (
+          <span className="qp-pcard-note" title={primary?.note ?? undefined}>{planInfo?.note}</span>
+        )}
         {timing && (
           <span className={`qp-pcard-reset ${timing.warn ? 'is-warn' : ''}`}>{timing.text}</span>
         )}
@@ -167,7 +175,7 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(pct)}
-            aria-label={`${meta.label} usage`}
+            aria-label={`Uso de ${meta.label}`}
             title={primary.note ?? undefined}
           >
             <span style={{ width: `${pct}%`, background: barColor(primary) }} />
@@ -181,7 +189,7 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
           {access.label}
         </span>
         {sources.length > 0 && (
-          <div className="qp-sources" role="group" aria-label="Gemini data source">
+          <div className="qp-sources" role="group" aria-label="Fuente de datos de Gemini">
             {[{ id: 'auto', label: 'Auto', state: undefined as undefined | keyof typeof SOURCE_COLORS }, ...sources].map((source) => {
               const selected = (view?.id ?? 'auto') === source.id;
               return (
@@ -195,7 +203,7 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
                     setGeminiSource(source.id);
                   }}
                   onKeyDown={(event) => event.stopPropagation()}
-                  title={source.id === 'auto' ? 'Best available source' : `${source.label}: ${'badge' in source ? source.badge : ''}`}
+                  title={source.id === 'auto' ? 'Mejor fuente disponible' : `${source.label}: ${'badge' in source ? source.badge : ''}`}
                 >
                   {source.state && <span className="qp-source-dot" style={{ background: SOURCE_COLORS[source.state] }} />}
                   {source.label}

@@ -86,7 +86,7 @@ const WidgetActivityView = ({
               <span className={`nav-tab-dot ${providerAccessDotClass(activeAccess.health)}`} />
             </div>
             <span className="metric-label widget-activity-caption">
-              {activeAccess.health === 'active' ? 'Recent conversations' : activeAccess.detail}
+              {activeAccess.health === 'active' ? 'Conversaciones recientes' : activeAccess.detail}
             </span>
           </div>
           {topModel && (
@@ -108,7 +108,7 @@ const WidgetActivityView = ({
 
         <RecentActivitySlides
           entries={entries}
-          emptyMessage="No recent conversations detected yet."
+          emptyMessage="Aún no se detectan conversaciones recientes."
           variant="widget"
           resetKey={provider}
         />

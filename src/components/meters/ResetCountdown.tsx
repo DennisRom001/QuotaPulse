@@ -8,7 +8,7 @@ type ResetCountdownProps = {
 type CountdownUrgency = 'none' | 'normal' | 'soon' | 'warning' | 'critical' | 'expired';
 
 export const formatRemaining = (seconds: number): string => {
-  if (seconds <= 0) return 'resetting';
+  if (seconds <= 0) return 'reiniciando';
   const d = Math.floor(seconds / 86400);
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);

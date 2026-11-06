@@ -45,18 +45,18 @@ const UpdateBanner = () => {
     <div className="qp-update" role="status">
       <span className="qp-update-text">
         {error
-          ? `Update failed: ${error}`
+          ? `Error al actualizar: ${error}`
           : progress !== undefined
-            ? `Installing v${update.version}${typeof progress === 'number' ? ` · ${progress}%` : '…'}`
-            : `QuotaPulse v${update.version} is available`}
+            ? `Instalando v${update.version}${typeof progress === 'number' ? ` · ${progress}%` : '…'}`
+            : `QuotaPulse v${update.version} disponible`}
       </span>
       {progress === undefined && (
         <>
           <button type="button" className="qp-btn qp-btn-accent" onClick={install}>
-            Install &amp; restart
+            Instalar y reiniciar
           </button>
           <button type="button" className="qp-btn" onClick={() => setDismissed(true)}>
-            Later
+            Más tarde
           </button>
         </>
       )}

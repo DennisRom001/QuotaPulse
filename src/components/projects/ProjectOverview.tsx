@@ -45,14 +45,14 @@ type ProjectCardData = {
 const formatAge = (timestamp?: string) => {
   if (!timestamp) return '';
   const deltaMs = Date.now() - new Date(timestamp).getTime();
-  if (!Number.isFinite(deltaMs) || deltaMs < 0) return 'now';
+  if (!Number.isFinite(deltaMs) || deltaMs < 0) return 'ahora';
   const minutes = Math.floor(deltaMs / 60_000);
-  if (minutes < 1) return 'now';
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return 'ahora';
+  if (minutes < 60) return `hace ${minutes} min`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `hace ${hours} h`;
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return `hace ${days} d`;
 };
 
 const formatTokens = (value: number) => {
@@ -171,12 +171,12 @@ const ProjectCard = ({ project }: { project: ProjectCardData }) => {
             <span className="proj-card-age">{formatAge(project.lastSeen)}</span>
           </div>
           <span className="proj-card-path" title={project.path ?? project.label}>
-            {project.path ?? 'Terminal/session activity'}
+            {project.path ?? 'Actividad de terminal/sesión'}
           </span>
         </div>
         <div className="proj-card-cost-col">
           <span className="proj-card-cost">{formatUsd(project.costUsd)}</span>
-          <span className="proj-card-cost-sub">today {formatUsd(project.todayCostUsd)}</span>
+          <span className="proj-card-cost-sub">hoy {formatUsd(project.todayCostUsd)}</span>
         </div>
       </div>
 
@@ -192,17 +192,17 @@ const ProjectCard = ({ project }: { project: ProjectCardData }) => {
           </span>
         ))}
         {project.estimated && (
-          <span className="proj-chip proj-chip-estimated" title="Cost split from daily totals by activity — this provider logs no project path">
+          <span className="proj-chip proj-chip-estimated" title="Costo repartido de los totales diarios según actividad: este proveedor no registra la ruta del proyecto">
             est.
           </span>
         )}
         {project.sessions != null && (
-          <span className="proj-chip">{project.sessions} {project.sessions === 1 ? 'session' : 'sessions'}</span>
+          <span className="proj-chip">{project.sessions} {project.sessions === 1 ? 'sesión' : 'sesiones'}</span>
         )}
         <span className="proj-chip">{formatTokens(project.tokens)} tok</span>
         {project.cacheHitRatio != null && project.tokens > 0 && (
-          <span className="proj-chip" title="Share of input tokens served from the prompt cache">
-            cache {Math.round(project.cacheHitRatio * 100)}%
+          <span className="proj-chip" title="Porcentaje de tokens de entrada servidos desde la caché de prompts">
+            caché {Math.round(project.cacheHitRatio * 100)}%
           </span>
         )}
         {project.models.slice(0, 2).map((model) => (
@@ -226,7 +226,7 @@ const ProjectCard = ({ project }: { project: ProjectCardData }) => {
               />
               <div className="proj-cmd-body">
                 <div className="proj-cmd-head">
-                  <span className="proj-cmd-model">{command.model ?? 'unknown'}</span>
+                  <span className="proj-cmd-model">{command.model ?? 'desconocido'}</span>
                 </div>
                 <div className="proj-cmd-text" title={command.prompt}>
                   {commandLabel(command.prompt)}
@@ -241,7 +241,7 @@ const ProjectCard = ({ project }: { project: ProjectCardData }) => {
 };
 
 const SessionRow = ({ session }: { session: SessionUsage }) => {
-  const label = session.cwd ? basename(session.cwd) : 'Unattributed';
+  const label = session.cwd ? basename(session.cwd) : 'Sin atribuir';
   const duration =
     session.first_ts != null && session.last_ts != null ? formatDuration(session.last_ts - session.first_ts) : null;
   const hit = cacheHit(session);
@@ -260,9 +260,9 @@ const SessionRow = ({ session }: { session: SessionUsage }) => {
           <span className="proj-card-age">{formatAge(unixToIso(session.last_ts))}</span>
         </div>
         <div className="proj-card-chips">
-          {duration && <span className="proj-chip" title="First to last logged message">{duration}</span>}
+          {duration && <span className="proj-chip" title="Del primer al último mensaje registrado">{duration}</span>}
           <span className="proj-chip">{formatTokens(session.total_tokens)} tok</span>
-          {session.total_tokens > 0 && <span className="proj-chip">cache {Math.round(hit * 100)}%</span>}
+          {session.total_tokens > 0 && <span className="proj-chip">caché {Math.round(hit * 100)}%</span>}
           {session.models.slice(0, 2).map((m) => (
             <span key={m.model} className="proj-chip proj-chip-model" title={`${m.model} · ${formatUsd(m.cost_usd)}`}>
               {shortModel(m.model)}
@@ -272,7 +272,7 @@ const SessionRow = ({ session }: { session: SessionUsage }) => {
       </div>
       <div className="proj-card-cost-col">
         <span className="proj-card-cost">{formatUsd(session.cost_usd)}</span>
-        {session.today_cost_usd > 0 && <span className="proj-card-cost-sub">today {formatUsd(session.today_cost_usd)}</span>}
+        {session.today_cost_usd > 0 && <span className="proj-card-cost-sub">hoy {formatUsd(session.today_cost_usd)}</span>}
       </div>
     </div>
   );
@@ -300,23 +300,23 @@ const ProjectOverview = ({ recentActivity, costHistory, projectUsage, sessionUsa
       {/* Header bar */}
       <div className="proj-header">
         <div className="proj-header-left">
-          <span className="proj-header-title">{view === 'projects' ? 'Projects' : 'Sessions'}</span>
+          <span className="proj-header-title">{view === 'projects' ? 'Proyectos' : 'Sesiones'}</span>
           <span className="proj-header-subtitle" title={
               periodDays > 30
-                ? 'Exact cost from the Claude and Codex session logs still on disk. Claude Code deletes logs after 30 days by default, so older spend is not attributed to projects.'
-                : 'Exact cost from local Claude and Codex session logs'
+                ? 'Costo exacto de los logs de sesión de Claude y Codex que siguen en disco. Claude Code borra los logs tras 30 días por defecto, así que el gasto anterior no se atribuye a proyectos.'
+                : 'Costo exacto de los logs locales de sesión de Claude y Codex'
             }>
             {periodDays}d · {formatUsd(exactTotal)}
-            {periodDays > 30 && ' · logs on disk only'}
+            {periodDays > 30 && ' · solo logs en disco'}
           </span>
         </div>
         <div className="proj-header-right">
           <div className="period-selector-group proj-view-toggle">
-            <GlassPill active={view === 'projects'} onClick={() => setView('projects')}>Projects</GlassPill>
-            <GlassPill active={view === 'sessions'} onClick={() => setView('sessions')}>Sessions</GlassPill>
+            <GlassPill active={view === 'projects'} onClick={() => setView('projects')}>Proyectos</GlassPill>
+            <GlassPill active={view === 'sessions'} onClick={() => setView('sessions')}>Sesiones</GlassPill>
           </div>
           <span className="proj-header-badge">
-            {view === 'projects' ? `${projects.length} projects` : `${sessionUsage.length} sessions`}
+            {view === 'projects' ? `${projects.length} proyectos` : `${sessionUsage.length} sesiones`}
           </span>
         </div>
       </div>
@@ -324,7 +324,7 @@ const ProjectOverview = ({ recentActivity, costHistory, projectUsage, sessionUsa
       {view === 'projects' ? (
         projects.length === 0 ? (
           <div className="proj-empty">
-            No project activity detected yet. Use a provider CLI or workspace to generate activity.
+            Aún no se detecta actividad de proyectos. Usa el CLI o el espacio de trabajo de un proveedor para generarla.
           </div>
         ) : (
           <div className="proj-grid soft-scroll">
@@ -335,7 +335,7 @@ const ProjectOverview = ({ recentActivity, costHistory, projectUsage, sessionUsa
         )
       ) : sessionUsage.length === 0 ? (
         <div className="proj-empty">
-          No Claude or Codex sessions in the last {periodDays} days.
+          No hay sesiones de Claude ni Codex en los últimos {periodDays} días.
         </div>
       ) : (
         <div className="proj-session-list soft-scroll">

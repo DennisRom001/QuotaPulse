@@ -48,7 +48,7 @@ const UsageMeter = ({ utilization, label, detail, note, resetsAt, providerTint, 
         className="metric-label"
         style={{ marginTop: size * 0.36, textAlign: 'center', minHeight: size < 100 ? 20 : 30, lineHeight: 1.3, fontSize: size < 100 ? 9 : 11 }}
       >
-        {detail ?? 'No window detail'}
+        {detail ?? 'Sin detalle de ventana'}
       </div>
       {note ? (
         <div

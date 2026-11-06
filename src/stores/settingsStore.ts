@@ -13,6 +13,11 @@ type SettingsState = {
   launchAtStartup: boolean;
   // Check GitHub Releases for a signed update once per launch.
   autoUpdateCheck: boolean;
+  // Estimated Cursor usage: prompts per cycle that use up the plan (null = off),
+  // billing-cycle start day and when it was last calibrated (ISO).
+  cursorPromptBudget: number | null;
+  cursorCycleStartDay: number;
+  cursorCalibratedAt: string | null;
   // Global default window used for trend fetches, alerts, and the comparison
   // surface. A preset (7/30/90) can be overridden with a custom day count.
   trendPreset: TrendPreset;
@@ -38,6 +43,7 @@ type SettingsState = {
   setSidebarCollapsed: (collapsed: boolean) => void;
   setLaunchAtStartup: (enabled: boolean) => void;
   setAutoUpdateCheck: (enabled: boolean) => void;
+  setCursorEstimate: (patch: { budget?: number | null; cycleStartDay?: number; calibratedAt?: string | null }) => void;
   setTrendPreset: (preset: TrendPreset) => void;
   setTrendCustom: (custom: boolean) => void;
   setCustomDays: (days: number) => void;
@@ -70,6 +76,9 @@ export const useSettingsStore = create<SettingsState>()(
       sidebarCollapsed: false,
       launchAtStartup: true,
       autoUpdateCheck: true,
+      cursorPromptBudget: null,
+      cursorCycleStartDay: 1,
+      cursorCalibratedAt: null,
       hydrated: false,
       trendPreset: 30,
       trendCustom: false,
@@ -103,6 +112,12 @@ export const useSettingsStore = create<SettingsState>()(
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
       setLaunchAtStartup: (enabled) => set({ launchAtStartup: enabled }),
       setAutoUpdateCheck: (enabled) => set({ autoUpdateCheck: enabled }),
+      setCursorEstimate: (patch) =>
+        set((s) => ({
+          cursorPromptBudget: patch.budget !== undefined ? patch.budget : s.cursorPromptBudget,
+          cursorCycleStartDay: patch.cycleStartDay ?? s.cursorCycleStartDay,
+          cursorCalibratedAt: patch.calibratedAt !== undefined ? patch.calibratedAt : s.cursorCalibratedAt,
+        })),
       setTrendPreset: (preset) => set({ trendPreset: preset, trendCustom: false }),
       setTrendCustom: (custom) => set({ trendCustom: custom }),
       setCustomDays: (days) =>
@@ -196,6 +211,9 @@ export const useSettingsStore = create<SettingsState>()(
         sidebarCollapsed: state.sidebarCollapsed,
         launchAtStartup: state.launchAtStartup,
         autoUpdateCheck: state.autoUpdateCheck,
+        cursorPromptBudget: state.cursorPromptBudget,
+        cursorCycleStartDay: state.cursorCycleStartDay,
+        cursorCalibratedAt: state.cursorCalibratedAt,
         trendPreset: state.trendPreset,
         trendCustom: state.trendCustom,
         customDays: state.customDays,

@@ -28,14 +28,14 @@ const UsageInsights = ({ breakdown }: UsageInsightsProps) => {
 
   return (
     <div className="pcard-section-panel">
-      <span className="pcard-section-title">Insights</span>
-      <div className="pcard-mix-bar" role="img" aria-label="Share of spend by model">
+      <span className="pcard-section-title">Análisis</span>
+      <div className="pcard-mix-bar" role="img" aria-label="Reparto del gasto por modelo">
         {insights.mix.map((segment, i) => (
           <span
             key={segment.label}
             className="pcard-mix-seg"
             style={{ width: `${segment.share * 100}%`, background: `rgb(var(--widget-accent) / ${SEGMENT_ALPHA[i]})` }}
-            title={`${segment.label} · ${Math.round(segment.share * 100)}%`}
+            title={`${segment.label === 'other' ? 'otros' : segment.label} · ${Math.round(segment.share * 100)}%`}
           />
         ))}
       </div>
@@ -43,14 +43,14 @@ const UsageInsights = ({ breakdown }: UsageInsightsProps) => {
         {insights.mix.map((segment, i) => (
           <div key={segment.label} className="pcard-model-row">
             <span className="pcard-mix-dot" style={{ background: `rgb(var(--widget-accent) / ${SEGMENT_ALPHA[i]})` }} />
-            <span className="pcard-model-name">{segment.label}</span>
+            <span className="pcard-model-name">{segment.label === 'other' ? 'otros' : segment.label}</span>
             <span className="pcard-model-cost">{Math.round(segment.share * 100)}%</span>
           </div>
         ))}
       </div>
       {insights.dominant && (
         <span className="pcard-mix-hint">
-          {insights.dominant.label} is {Math.round(insights.dominant.share * 100)}% of spend this period
+          {insights.dominant.label} es el {Math.round(insights.dominant.share * 100)}% del gasto en este periodo
         </span>
       )}
     </div>

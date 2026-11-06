@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Bell, Download, MenuSquare, Monitor, Palette, Power, RefreshCw, Server, Wallet } from 'lucide-react';
+import { Bell, Download, Gauge, MenuSquare, Monitor, Palette, Power, RefreshCw, Server, Wallet } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import GlassToggle from '@/components/glass/GlassToggle';
 import GlassInput from '@/components/glass/GlassInput';
@@ -12,6 +12,94 @@ import { useUsageStore } from '@/stores/usageStore';
 
 const providers: ProviderId[] = ['claude', 'codex', 'antigravity', 'cursor'];
 
+/**
+ * Estimated Cursor usage. Cursor keeps its quota server-side, so QuotaPulse
+ * divides the prompts it sees locally this cycle by a prompt budget. The
+ * accurate way to set that budget is to calibrate against the real % shown
+ * on cursor.com/dashboard.
+ */
+const CursorEstimateSection = () => {
+  const budget = useSettingsStore((s) => s.cursorPromptBudget);
+  const cycleDay = useSettingsStore((s) => s.cursorCycleStartDay);
+  const calibratedAt = useSettingsStore((s) => s.cursorCalibratedAt);
+  const setEstimate = useSettingsStore((s) => s.setCursorEstimate);
+  const [actualPct, setActualPct] = useState('');
+  const [message, setMessage] = useState<string>();
+
+  const calibrate = async () => {
+    const pct = Number(actualPct.replace(',', '.'));
+    try {
+      const next = await invoke<number>('calibrate_cursor_estimate', { actualPercent: pct, cycleStartDay: cycleDay });
+      setEstimate({ budget: next, calibratedAt: new Date().toISOString() });
+      setActualPct('');
+      setMessage(`Calibrado: ~${next} prompts por ciclo`);
+    } catch (e) {
+      setMessage(String(e));
+    }
+  };
+
+  const calibratedDays = calibratedAt ? Math.floor((Date.now() - Date.parse(calibratedAt)) / 86_400_000) : null;
+
+  return (
+    <div className="stg-section">
+      <div className="stg-section-head">
+        <div className="stg-section-head-left">
+          <span className="stg-section-icon"><Gauge size={13} /></span>
+          <span className="stg-section-title">Estimación de Cursor</span>
+        </div>
+        <span className="stg-badge">{budget ? 'Activa' : 'Desactivada'}</span>
+      </div>
+      <div className="stg-startup-row">
+        <span className="stg-startup-text">
+          Cursor guarda su cuota en sus servidores. QuotaPulse la estima a partir de los prompts que ve
+          en este equipo. Para una cifra cercana, escribe el % que muestra cursor.com/dashboard y pulsa Calibrar.
+        </span>
+      </div>
+      <div className="stg-startup-row">
+        <span className="stg-startup-text">Uso actual del panel (%)</span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <GlassInput type="number" min={0.5} max={100} step={0.1} value={actualPct} onChange={setActualPct} placeholder="p. ej. 23" style={{ minWidth: 70 }} />
+          <button className="pcard-action-btn" onClick={calibrate} disabled={!actualPct} style={{ width: 'auto', padding: '0 10px' }}>
+            Calibrar
+          </button>
+        </div>
+      </div>
+      <div className="stg-startup-row">
+        <span className="stg-startup-text">Prompts por ciclo de facturación</span>
+        <GlassInput
+          type="number"
+          min={0}
+          value={budget ? String(budget) : ''}
+          placeholder="Desactivado"
+          onChange={(v) => setEstimate({ budget: Number(v) > 0 ? Math.round(Number(v)) : null, calibratedAt: null })}
+          style={{ minWidth: 70 }}
+        />
+      </div>
+      <div className="stg-startup-row">
+        <span className="stg-startup-text">El ciclo empieza el día</span>
+        <GlassInput
+          type="number"
+          min={1}
+          max={28}
+          value={String(cycleDay)}
+          onChange={(v) => setEstimate({ cycleStartDay: Math.min(28, Math.max(1, Math.round(Number(v)) || 1)) })}
+          style={{ minWidth: 70 }}
+        />
+      </div>
+      {(message || calibratedDays != null) && (
+        <div className="stg-startup-row">
+          <span className="stg-startup-text">
+            {message ??
+              `Calibrado ${calibratedDays === 0 ? 'hoy' : `hace ${calibratedDays} d`}${
+                calibratedDays != null && calibratedDays >= 7 ? ' — recalibra para una cifra más precisa' : ''
+              }`}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const providerLabels: Record<ProviderId, string> = {
   claude: 'Claude',
   codex: 'ChatGPT',
@@ -22,10 +110,10 @@ const providerLabels: Record<ProviderId, string> = {
 // Credentials are auto-detected from each tool's own local files; quota is
 // read directly from the provider's official host. Nothing is typed or stored.
 const localSources: Record<ProviderId, string> = {
-  claude: 'Claude Code login → api.anthropic.com · logs ~/.claude/projects',
-  codex: 'Codex CLI login → chatgpt.com · logs ~/.codex/sessions',
+  claude: 'Sesión de Claude Code → api.anthropic.com · registros ~/.claude/projects',
+  codex: 'Sesión de Codex CLI → chatgpt.com · registros ~/.codex/sessions',
   antigravity: 'Gemini CLI → Google · Antigravity (local) · ~/.gemini',
-  cursor: 'Cursor session → cursor.com',
+  cursor: 'Sesión de Cursor → cursor.com · actividad local',
 };
 
 const providerAccents: Record<ProviderId, string> = {
@@ -36,26 +124,28 @@ const providerAccents: Record<ProviderId, string> = {
 };
 
 const themeOptions = [
-  { value: 'system', label: 'System', note: 'Follow OS appearance', tag: 'Adaptive' },
-  { value: 'dark', label: 'Dark', note: 'Glass-heavy contrast', tag: 'Low glare' },
-  { value: 'light', label: 'Light', note: 'Bright desktop mode', tag: 'Airy' },
+  { value: 'system', label: 'Sistema', note: 'Sigue el tema del sistema', tag: 'Adaptable' },
+  { value: 'dark', label: 'Oscuro', note: 'Contraste alto', tag: 'Menos brillo' },
+  { value: 'light', label: 'Claro', note: 'Modo de escritorio luminoso', tag: 'Ligero' },
 ] as const;
 
 const cadenceOptions: { value: RefreshCadence; label: string; note: string; badge: string; bars: number[] }[] = [
-  { value: 'manual', label: 'Manual', note: 'On demand', badge: 'Hold', bars: [8, 14, 10, 6] },
-  { value: 'every30s', label: '30s', note: 'Fastest', badge: 'Rapid', bars: [28, 38, 30, 20] },
-  { value: 'every1m', label: '1m', note: 'Balanced', badge: 'Live', bars: [24, 34, 28, 18] },
-  { value: 'every2m', label: '2m', note: 'Moderate', badge: 'Balanced', bars: [18, 28, 22, 14] },
-  { value: 'every5m', label: '5m', note: 'Low-touch', badge: 'Light', bars: [12, 18, 14, 10] },
-  { value: 'every15m', label: '15m', note: 'Minimal', badge: 'Quiet', bars: [8, 12, 9, 6] },
+  { value: 'manual', label: 'Manual', note: 'Bajo demanda', badge: 'Pausa', bars: [8, 14, 10, 6] },
+  { value: 'every30s', label: '30s', note: 'Lo más rápido', badge: 'Rápido', bars: [28, 38, 30, 20] },
+  { value: 'every1m', label: '1m', note: 'Equilibrado', badge: 'En vivo', bars: [24, 34, 28, 18] },
+  { value: 'every2m', label: '2m', note: 'Moderado', badge: 'Equilibrado', bars: [18, 28, 22, 14] },
+  { value: 'every5m', label: '5m', note: 'Poco frecuente', badge: 'Ligero', bars: [12, 18, 14, 10] },
+  { value: 'every15m', label: '15m', note: 'Mínimo', badge: 'Silencioso', bars: [8, 12, 9, 6] },
 ];
 
 type SettingsView = 'settings' | 'about';
 
+const thresholdLabels = { warning: 'aviso', high: 'alto', critical: 'crítico' } as const;
+
 const healthLabel = (health?: ProviderStatus['health']) => {
-  if (health === 'active') return 'active';
+  if (health === 'active') return 'activo';
   if (health === 'error') return 'error';
-  return 'waiting';
+  return 'en espera';
 };
 
 const formatCadenceLabel = (cadence: RefreshCadence) =>
@@ -65,8 +155,8 @@ const formatThemeLabel = (theme: 'system' | 'dark' | 'light') =>
   themeOptions.find((option) => option.value === theme)?.label ?? theme;
 
 const formatFetchedAt = (value?: string) => {
-  if (!value) return 'No snapshot yet';
-  return `Updated ${new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  if (!value) return 'Sin datos todavía';
+  return `Actualizado ${new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 };
 
 const BudgetForecastSummary = ({ forecast }: { forecast: BudgetForecast }) => {
@@ -75,18 +165,18 @@ const BudgetForecastSummary = ({ forecast }: { forecast: BudgetForecast }) => {
     <div className="stg-pp-forecast-wrap">
       <div className="stg-pp-forecast">
         <div className="stg-pp-forecast-item">
-          <span className="stg-pp-forecast-item-label">Spend</span>
+          <span className="stg-pp-forecast-item-label">Gasto</span>
           <span className="stg-pp-forecast-item-value">${forecast.spend_to_date_usd.toFixed(2)}</span>
         </div>
         <div className="stg-pp-forecast-item">
-          <span className="stg-pp-forecast-item-label">Proj</span>
+          <span className="stg-pp-forecast-item-label">Proy.</span>
           <span className="stg-pp-forecast-item-value">${forecast.projected_spend_usd.toFixed(2)}</span>
         </div>
         <div className={`stg-pp-forecast-item ${exceed ? 'stg-pp-forecast-exceed' : ''}`}>
-          <span className="stg-pp-forecast-item-label">Used</span>
+          <span className="stg-pp-forecast-item-label">Usado</span>
           <span className="stg-pp-forecast-item-value">{forecast.utilization_percent.toFixed(0)}%</span>
         </div>
-        {exceed && <span className="stg-pp-forecast-flag">exceeds</span>}
+        {exceed && <span className="stg-pp-forecast-flag">excede</span>}
       </div>
     </div>
   );
@@ -133,10 +223,10 @@ const SettingsPage = () => {
   const activeCount = providers.filter((provider) => statuses[provider]?.health === 'active').length;
 
   const surfaceCards = [
-    { key: 'theme', label: 'Theme', value: formatThemeLabel(theme), badge: theme === 'system' ? 'OS' : 'Fixed', icon: Palette },
-    { key: 'mode', label: 'Mode', value: widgetMode ? 'Widget' : 'Dashboard', badge: widgetMode ? 'Compact' : 'Full', icon: Monitor },
-    { key: 'refresh', label: 'Refresh', value: formatCadenceLabel(refreshCadence), badge: refreshCadence === 'manual' ? 'Manual' : 'Auto', icon: RefreshCw },
-    { key: 'providers', label: 'Sources', value: `${enabledCount}/3`, badge: `${activeCount} live`, icon: Server },
+    { key: 'theme', label: 'Tema', value: formatThemeLabel(theme), badge: theme === 'system' ? 'SO' : 'Fijo', icon: Palette },
+    { key: 'mode', label: 'Modo', value: widgetMode ? 'Widget' : 'Panel', badge: widgetMode ? 'Compacto' : 'Completo', icon: Monitor },
+    { key: 'refresh', label: 'Actualizar', value: formatCadenceLabel(refreshCadence), badge: refreshCadence === 'manual' ? 'Manual' : 'Auto', icon: RefreshCw },
+    { key: 'providers', label: 'Fuentes', value: `${enabledCount}/${providers.length}`, badge: `${activeCount} activas`, icon: Server },
   ] as const;
 
   // Live previews of the text beside each provider's ring badge, mirroring
@@ -153,13 +243,13 @@ const SettingsPage = () => {
         return `$${spent.toFixed(0)}`;
       })
       .join(' · ');
-    return { off: 'hidden', percent: percent || '0%', cost: cost || '$0' } satisfies Record<TrayTitleMode, string>;
+    return { off: 'oculto', percent: percent || '0%', cost: cost || '$0' } satisfies Record<TrayTitleMode, string>;
   }, [snapshots, costHistory]);
 
   const trayTitleOptions: { value: TrayTitleMode; label: string }[] = [
-    { value: 'off', label: 'Off' },
-    { value: 'percent', label: 'Usage %' },
-    { value: 'cost', label: "Today's cost" },
+    { value: 'off', label: 'Oculto' },
+    { value: 'percent', label: 'Uso %' },
+    { value: 'cost', label: 'Coste de hoy' },
   ];
 
   // A1 — optimistically update the store, then persist the per-provider alert
@@ -233,13 +323,13 @@ const SettingsPage = () => {
           className={`stg-toggle-btn ${view === 'settings' ? 'stg-toggle-active' : ''}`}
           onClick={() => setView('settings')}
         >
-          Settings
+          Ajustes
         </button>
         <button
           className={`stg-toggle-btn ${view === 'about' ? 'stg-toggle-active' : ''}`}
           onClick={() => setView('about')}
         >
-          About
+          Acerca de
         </button>
       </div>
 
@@ -269,7 +359,7 @@ const SettingsPage = () => {
             <div className="stg-section-head">
               <div className="stg-section-head-left">
                 <span className="stg-section-icon"><Palette size={13} /></span>
-                <span className="stg-section-title">Appearance</span>
+                <span className="stg-section-title">Apariencia</span>
               </div>
               <span className="stg-badge">{formatThemeLabel(theme)}</span>
             </div>
@@ -291,7 +381,7 @@ const SettingsPage = () => {
                       </div>
                     </div>
                     <span className="stg-theme-label">{option.label}</span>
-                    <span className="stg-theme-tag">{isActive ? 'Active' : option.tag}</span>
+                    <span className="stg-theme-tag">{isActive ? 'Activo' : option.tag}</span>
                   </button>
                 );
               })}
@@ -303,7 +393,7 @@ const SettingsPage = () => {
             <div className="stg-section-head">
               <div className="stg-section-head-left">
                 <span className="stg-section-icon"><RefreshCw size={13} /></span>
-                <span className="stg-section-title">Refresh</span>
+                <span className="stg-section-title">Actualización</span>
               </div>
               <span className="stg-badge">{formatCadenceLabel(refreshCadence)}</span>
             </div>
@@ -334,42 +424,44 @@ const SettingsPage = () => {
             <div className="stg-section-head">
               <div className="stg-section-head-left">
                 <span className="stg-section-icon"><Power size={13} /></span>
-                <span className="stg-section-title">Startup</span>
+                <span className="stg-section-title">Inicio</span>
               </div>
-              <span className="stg-badge">{launchAtStartup ? 'Auto' : 'Manual'}</span>
+              <span className="stg-badge">{launchAtStartup ? 'Automático' : 'Manual'}</span>
             </div>
             <div className="stg-startup-row">
               <span className="stg-startup-text">
-                {launchAtStartup ? 'Starts automatically after sign-in' : 'Manual launch only'}
+                {launchAtStartup ? 'Se abre al iniciar sesión en Windows' : 'Solo se abre manualmente'}
               </span>
               <GlassToggle
                 checked={launchAtStartup}
                 onChange={setLaunchAtStartup}
-                label={launchAtStartup ? 'On' : 'Off'}
+                label={launchAtStartup ? 'Sí' : 'No'}
               />
             </div>
             <div className="stg-startup-row">
               <span className="stg-startup-text">
                 {autoUpdateCheck
-                  ? 'Check GitHub Releases for signed updates at launch'
-                  : 'Update checks off (use About → Check for updates)'}
+                  ? 'Busca actualizaciones firmadas en GitHub al abrir'
+                  : 'Sin búsqueda automática (usa Acerca de → Buscar actualizaciones)'}
               </span>
               <GlassToggle
                 checked={autoUpdateCheck}
                 onChange={setAutoUpdateCheck}
-                label={autoUpdateCheck ? 'On' : 'Off'}
+                label={autoUpdateCheck ? 'Sí' : 'No'}
               />
             </div>
           </div>
+
+          <CursorEstimateSection />
 
           {/* Providers */}
           <div className="stg-section">
             <div className="stg-section-head">
               <div className="stg-section-head-left">
                 <span className="stg-section-icon"><Server size={13} /></span>
-                <span className="stg-section-title">Providers</span>
+                <span className="stg-section-title">Proveedores</span>
               </div>
-              <span className="stg-badge">{enabledCount} enabled</span>
+              <span className="stg-badge">{enabledCount} activos</span>
             </div>
             <div className="stg-providers">
               {providers.map((provider) => {
@@ -390,11 +482,11 @@ const SettingsPage = () => {
                       <span className="stg-badge" style={{ color: status?.health === 'active' ? '#34d399' : status?.health === 'error' ? '#f87171' : '#fbbf24' }}>
                         {healthLabel(status?.health)}
                       </span>
-                      <span className="stg-badge">{providerAlertCount} alerts</span>
+                      <span className="stg-badge">{providerAlertCount} alertas</span>
                       <GlassToggle
                         checked={isEnabled}
                         onChange={(next) => setProviderEnabled(provider, next)}
-                        label={isEnabled ? 'On' : 'Off'}
+                        label={isEnabled ? 'Sí' : 'No'}
                       />
                     </div>
                     <div className="stg-provider-key-row">
@@ -402,7 +494,7 @@ const SettingsPage = () => {
                     </div>
                     <div className="stg-provider-footer">
                       <span>{formatFetchedAt(snapshot?.fetched_at)}</span>
-                      <span>{snapshot?.stale ? 'stale' : 'live'}</span>
+                      <span>{snapshot?.stale ? 'desactualizado' : 'al día'}</span>
                       {snapshot && <span>{snapshot.source}</span>}
                     </div>
                   </div>
@@ -416,9 +508,9 @@ const SettingsPage = () => {
             <div className="stg-section-head">
               <div className="stg-section-head-left">
                 <span className="stg-section-icon"><MenuSquare size={13} /></span>
-                <span className="stg-section-title">Menu bar</span>
+                <span className="stg-section-title">Bandeja del sistema</span>
               </div>
-              <span className="stg-badge">macOS</span>
+              <span className="stg-badge">Icono</span>
             </div>
             <div className="stg-cadence-row">
               {trayTitleOptions.map((option) => {
@@ -428,7 +520,7 @@ const SettingsPage = () => {
                     key={option.value}
                     className={`stg-cadence-card ${isActive ? 'stg-cadence-card-active' : ''}`}
                     onClick={() => setTrayTitleMode(option.value)}
-                    title="One menu-bar badge per provider: its logo wrapped in usage rings, plus this value"
+                    title="Un icono por proveedor en la bandeja: su logo rodeado por anillos de uso, más este valor"
                   >
                     <span className="stg-tray-preview">{trayPreviews[option.value]}</span>
                     <span className="stg-cadence-label">{option.label}</span>
@@ -443,27 +535,27 @@ const SettingsPage = () => {
             <div className="stg-section-head">
               <div className="stg-section-head-left">
                 <span className="stg-section-icon"><Bell size={13} /></span>
-                <span className="stg-section-title">Notifications</span>
+                <span className="stg-section-title">Notificaciones</span>
               </div>
-              <span className="stg-badge">{notificationsEnabled ? 'On' : 'Off'}</span>
+              <span className="stg-badge">{notificationsEnabled ? 'Activadas' : 'Desactivadas'}</span>
             </div>
             <div className="stg-pp-toggle-row">
               <span className="stg-pp-toggle-text">
                 {notificationsEnabled
-                  ? 'Once per threshold crossing, when on pace to hit a limit before reset, and on projected budget overrun'
-                  : 'Notifications are disabled'}
+                  ? 'Al cruzar cada umbral, cuando el ritmo llevaría al límite antes del reinicio y si se prevé superar el presupuesto'
+                  : 'Las notificaciones están desactivadas'}
               </span>
               <GlassToggle
                 checked={notificationsEnabled}
                 onChange={setNotificationsEnabled}
-                label={notificationsEnabled ? 'On' : 'Off'}
+                label={notificationsEnabled ? 'Sí' : 'No'}
               />
             </div>
             <div className="stg-note">
               <Bell size={11} />
               <span>
-                Notifications require the OS notification permission. Grant access for QuotaPulse in
-                System Settings → Privacy & Security → Notifications if alerts do not appear.
+                Las notificaciones necesitan el permiso del sistema. Si no aparecen, actívalas para
+                QuotaPulse en Configuración de Windows → Sistema → Notificaciones.
               </span>
             </div>
             <div className="stg-pp-grid">
@@ -482,7 +574,7 @@ const SettingsPage = () => {
                     <div className="stg-pp-fields stg-pp-fields-threshold">
                       {(['warning', 'high', 'critical'] as const).map((field) => (
                         <div key={field} className="stg-pp-field">
-                          <span className="stg-pp-field-label">{field}</span>
+                          <span className="stg-pp-field-label">{thresholdLabels[field]}</span>
                           <GlassInput
                             type="number"
                             min={0}
@@ -510,9 +602,9 @@ const SettingsPage = () => {
             <div className="stg-section-head">
               <div className="stg-section-head-left">
                 <span className="stg-section-icon"><Wallet size={13} /></span>
-                <span className="stg-section-title">Budgets</span>
+                <span className="stg-section-title">Presupuestos</span>
               </div>
-              <span className="stg-badge">spend cap</span>
+              <span className="stg-badge">límite de gasto</span>
             </div>
             <div className="stg-pp-grid">
               {providers.map((provider) => {
@@ -529,7 +621,7 @@ const SettingsPage = () => {
                     </div>
                     <div className="stg-pp-fields stg-pp-fields-budget">
                       <div className="stg-pp-field">
-                        <span className="stg-pp-field-label">Amount ($)</span>
+                        <span className="stg-pp-field-label">Importe ($)</span>
                         <GlassInput
                           type="number"
                           min={0}
@@ -541,7 +633,7 @@ const SettingsPage = () => {
                         />
                       </div>
                       <div className="stg-pp-field">
-                        <span className="stg-pp-field-label">Period (days)</span>
+                        <span className="stg-pp-field-label">Periodo (días)</span>
                         <GlassInput
                           type="number"
                           min={1}
@@ -570,9 +662,9 @@ const SettingsPage = () => {
             <div className="stg-section-head">
               <div className="stg-section-head-left">
                 <span className="stg-section-icon"><RefreshCw size={13} /></span>
-                <span className="stg-section-title">Provider cadence</span>
+                <span className="stg-section-title">Frecuencia por proveedor</span>
               </div>
-              <span className="stg-badge">per source</span>
+              <span className="stg-badge">por fuente</span>
             </div>
             <div className="stg-pp-grid">
               {providers.map((provider) => {
@@ -589,7 +681,7 @@ const SettingsPage = () => {
                     </div>
                     <div className="stg-pp-fields stg-pp-field-select">
                       <div className="stg-pp-field">
-                        <span className="stg-pp-field-label">Refresh</span>
+                        <span className="stg-pp-field-label">Actualizar</span>
                         <select
                           className="stg-cadence-select"
                           value={cadence}
@@ -614,13 +706,13 @@ const SettingsPage = () => {
             <div className="stg-section-head">
               <div className="stg-section-head-left">
                 <span className="stg-section-icon"><Download size={13} /></span>
-                <span className="stg-section-title">Export</span>
+                <span className="stg-section-title">Exportar</span>
               </div>
               <span className="stg-badge">CSV · JSON · PDF</span>
             </div>
             <div className="stg-pp-fields stg-pp-fields-budget">
               <div className="stg-pp-field">
-                <span className="stg-pp-field-label">Format</span>
+                <span className="stg-pp-field-label">Formato</span>
                 <select
                   className="stg-cadence-select"
                   value={exportFormat}
@@ -632,7 +724,7 @@ const SettingsPage = () => {
                 </select>
               </div>
               <div className="stg-pp-field">
-                <span className="stg-pp-field-label">Days</span>
+                <span className="stg-pp-field-label">Días</span>
                 <select
                   className="stg-cadence-select"
                   value={String(exportDays)}
@@ -649,7 +741,7 @@ const SettingsPage = () => {
                   className="stg-pp-export-btn"
                   onClick={() => void useUsageStore.getState().exportReport(exportFormat, exportDays)}
                 >
-                  Export
+                  Exportar
                 </button>
               </div>
             </div>

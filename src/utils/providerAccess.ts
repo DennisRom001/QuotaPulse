@@ -49,11 +49,11 @@ export const getProviderAccessState = (
   if (snapshot?.stale) {
     // Say how old the cached figure is (the backend drops it after 10 min).
     const ageMin = Math.max(0, Math.round((Date.now() - new Date(snapshot.fetched_at).getTime()) / 60000));
-    const age = ageMin < 1 ? 'just now' : `${ageMin}m ago`;
+    const age = ageMin < 1 ? 'ahora' : `hace ${ageMin} min`;
     return {
       health: 'waiting',
-      label: `Live — cached ${age}`,
-      detail: `The last live call failed; showing live data from ${age} until the next refresh.`,
+      label: `Live — caché ${age}`,
+      detail: `La última consulta en vivo falló; se muestran los datos en vivo de ${age} hasta la próxima actualización.`,
       color: providerAccessColor('waiting'),
     };
   }
@@ -62,8 +62,8 @@ export const getProviderAccessState = (
     if (authState?.kind === 'none') {
       return {
         health: 'waiting',
-        label: 'Local — no auth',
-        detail: 'No provider auth was detected; showing usage derived from local session logs.',
+        label: 'Local — sin sesión',
+        detail: 'No se detectó ninguna sesión del proveedor; se muestra el uso calculado con los registros locales.',
         color: providerAccessColor('waiting'),
       };
     }
@@ -75,8 +75,8 @@ export const getProviderAccessState = (
       if (expired) {
         return {
           health: 'waiting',
-          label: 'Local — auth expired',
-          detail: authState.last_error || 'OAuth is expired; click to refresh.',
+          label: 'Local — sesión caducada',
+          detail: authState.last_error || 'La sesión ha caducado; pulsa para actualizar.',
           color: providerAccessColor('waiting'),
         };
       }
@@ -88,15 +88,15 @@ export const getProviderAccessState = (
       return {
         health: 'waiting',
         label: 'Local',
-        detail: authState.last_error || 'Showing local data — start the CLI for live quota.',
+        detail: authState.last_error || 'Datos locales — abre la CLI para ver la cuota en vivo.',
         color: providerAccessColor('waiting'),
       };
     }
 
     return {
       health: 'waiting',
-      label: 'Local — fetch failed',
-      detail: authState?.last_error || 'Live usage is unavailable right now; showing local data until the next refresh.',
+      label: 'Local — error al consultar',
+      detail: authState?.last_error || 'El uso en vivo no está disponible ahora; se muestran datos locales hasta la próxima actualización.',
       color: providerAccessColor('waiting'),
     };
   }
@@ -105,7 +105,7 @@ export const getProviderAccessState = (
     return {
       health: 'active',
       label: 'Live',
-      detail: 'Usage data is accessible.',
+      detail: 'Datos de uso disponibles.',
       color: providerAccessColor('active'),
     };
   }
@@ -113,8 +113,8 @@ export const getProviderAccessState = (
   if (status?.health === 'active') {
     return {
       health: 'waiting',
-      label: 'Checking',
-      detail: 'Provider data was detected; waiting for the first usage snapshot.',
+      label: 'Comprobando',
+      detail: 'Se detectó el proveedor; esperando los primeros datos de uso.',
       color: providerAccessColor('waiting'),
     };
   }
@@ -122,7 +122,7 @@ export const getProviderAccessState = (
   if (status?.message) {
     return {
       health: 'error',
-      label: 'No access',
+      label: 'Sin acceso',
       detail: status.message,
       color: providerAccessColor('error'),
     };
@@ -130,8 +130,8 @@ export const getProviderAccessState = (
 
   return {
     health: 'unknown',
-    label: 'Checking',
-    detail: 'Checking provider access.',
+    label: 'Comprobando',
+    detail: 'Comprobando el acceso al proveedor.',
     color: providerAccessColor('unknown'),
   };
 };

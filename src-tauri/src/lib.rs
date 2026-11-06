@@ -488,6 +488,8 @@ pub fn run() {
             commands::set_per_provider_cadence,
             commands::get_per_provider_cadence,
             commands::set_tray_title_mode,
+            commands::set_cursor_estimate,
+            commands::calibrate_cursor_estimate,
             commands::get_tray_title_mode,
             commands::set_notifications_enabled,
             limit_forecast::get_limit_forecasts,

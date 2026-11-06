@@ -10,19 +10,19 @@ const compactNumber = (value?: number | null) => {
 export const windowLabel = (window?: UsageWindow) => {
   switch (window?.window_type) {
     case 'five_hour':
-      return '5h Window';
+      return 'Ventana 5 h';
     case 'seven_day':
-      return '7d Window';
+      return 'Ventana 7 d';
     case 'daily':
-      return 'Daily';
+      return 'Diaria';
     case 'monthly':
-      return 'Monthly';
+      return 'Mensual';
     case 'weekly':
-      return 'Weekly';
+      return 'Semanal';
     case 'session':
-      return 'Session';
+      return 'Sesión';
     default:
-      return 'Window';
+      return 'Ventana';
   }
 };
 
@@ -41,7 +41,7 @@ export const displayWindows = (snapshot?: UsageSnapshot): [UsageWindow | undefin
 };
 
 export const windowValueLabel = (window?: UsageWindow) => {
-  if (!window) return 'No data';
+  if (!window) return 'Sin datos';
   if (window.accuracy === 'percent_only' || window.used == null || window.limit == null) {
     return '';
   }
@@ -51,7 +51,7 @@ export const windowValueLabel = (window?: UsageWindow) => {
 
   switch (window.unit) {
     case 'requests':
-      return `${base} requests`;
+      return window.accuracy === 'approximate' ? `${base} prompts (est.)` : `${base} solicitudes`;
     case 'tokens':
       return `${base} tokens`;
     default:
@@ -61,8 +61,8 @@ export const windowValueLabel = (window?: UsageWindow) => {
 
 export const countdownLabel = (window?: UsageWindow) => {
   const secs = window?.reset_countdown_secs;
-  if (secs == null || secs <= 0) return 'Reset unknown';
-  if (secs < 7_200) return `${Math.ceil(secs / 60)}m left`;
-  if (secs < 172_800) return `${Math.ceil(secs / 3_600)}h left`;
-  return `${Math.ceil(secs / 86_400)}d left`;
+  if (secs == null || secs <= 0) return 'Reinicio desconocido';
+  if (secs < 7_200) return `quedan ${Math.ceil(secs / 60)} min`;
+  if (secs < 172_800) return `quedan ${Math.ceil(secs / 3_600)} h`;
+  return `quedan ${Math.ceil(secs / 86_400)} d`;
 };

@@ -1,6 +1,6 @@
 [package]
 name = "quotapulse"
-version = "1.0.0"
+version = "1.0.1"
 description = "Real-time quota monitor for Claude, ChatGPT, Gemini, Cursor and LiteLLM Proxy"
 authors = ["Dennis Romero"]
 license = "MIT"

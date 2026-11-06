@@ -440,7 +440,10 @@ body {
 .qp-pcard {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
+  /* Same height for cards with and without a bar, so the list stays even. */
+  min-height: 112px;
   cursor: pointer;
 }
 
@@ -453,8 +456,31 @@ body {
     'bar  bar   bar';
   align-items: center;
   column-gap: 12px;
-  row-gap: 3px;
+  row-gap: 4px;
   min-width: 0;
+}
+
+/* Extra row for the activity note (Cursor), so it never shares a cell. */
+.qp-pcard-main.has-note {
+  grid-template-areas:
+    'logo title plan'
+    'logo sub   reset'
+    'logo note  note'
+    'bar  bar   bar';
+}
+
+.qp-pcard-note {
+  grid-area: note;
+  min-width: 0;
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--qp-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .qp-pcard-logo {
@@ -520,6 +546,7 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 11px;
+  line-height: 1.45;
   color: var(--qp-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -527,6 +554,7 @@ body {
 .qp-pcard-reset {
   grid-area: reset;
   font-size: 11px;
+  line-height: 1.45;
   color: var(--qp-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -558,6 +586,13 @@ body {
     grid-template-areas:
       'logo title bar plan'
       'logo sub   bar reset';
+  }
+
+  .qp-pcard-main.has-note {
+    grid-template-areas:
+      'logo title bar  plan'
+      'logo sub   bar  reset'
+      'logo note  note note';
   }
 
   .qp-pcard-bar {

@@ -57,7 +57,7 @@ const CostTrendChart = ({ points, color, compact, days }: CostTrendChartProps) =
               fontSize: compact ? 10 : 12,
             }}
           />
-          <Area type="monotone" dataKey="cost_usd" stroke={color} fill="url(#costFill)" strokeWidth={compact ? 1.5 : 2} />
+          <Area type="monotone" dataKey="cost_usd" name="Costo (USD)" stroke={color} fill="url(#costFill)" strokeWidth={compact ? 1.5 : 2} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

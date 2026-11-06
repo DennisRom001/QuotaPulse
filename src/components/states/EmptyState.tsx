@@ -9,9 +9,9 @@ type EmptyStateProps = {
 
 const EmptyState = ({
   onOpenSettings,
-  title = 'No providers configured',
-  message = 'Enable at least one provider in settings to start tracking usage.',
-  ctaLabel = 'Open Settings',
+  title = 'No hay proveedores configurados',
+  message = 'Activa al menos un proveedor en los ajustes para empezar a monitorear el uso.',
+  ctaLabel = 'Abrir ajustes',
 }: EmptyStateProps) => (
   <div className="qp-state">
     <span className="qp-state-icon"><Inbox size={16} /></span>

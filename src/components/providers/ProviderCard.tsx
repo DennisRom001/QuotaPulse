@@ -34,6 +34,12 @@ const providerMeta: Record<ProviderId, { name: string; tint: 'claude' | 'codex' 
   cursor: { name: 'Cursor', tint: 'cursor', color: '#7c8cff', accent: '124 140 255' },
 };
 
+const severityLabel: Record<UsageAlert['severity'], string> = {
+  warning: 'aviso',
+  high: 'alto',
+  critical: 'crítico',
+};
+
 const severityColor: Record<UsageAlert['severity'], string> = {
   warning: '#f59e0b',
   high: '#f97316',
@@ -48,14 +54,14 @@ const formatTokens = (value: number) => {
 
 const formatAge = (timestamp: string) => {
   const deltaMs = Date.now() - new Date(timestamp).getTime();
-  if (!Number.isFinite(deltaMs) || deltaMs < 0) return 'now';
+  if (!Number.isFinite(deltaMs) || deltaMs < 0) return 'ahora';
   const minutes = Math.floor(deltaMs / 60_000);
-  if (minutes < 1) return 'now';
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return 'ahora';
+  if (minutes < 60) return `hace ${minutes} min`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `hace ${hours} h`;
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return `hace ${days} d`;
 };
 
 type ProviderCardProps = {
@@ -125,7 +131,7 @@ const ProviderCard = ({
         models: project.models.map((m) => m.model),
         lastSeen: project.last_ts != null ? new Date(project.last_ts * 1000).toISOString() : undefined,
         count: project.session_count,
-        countLabel: project.session_count === 1 ? 'session' : 'sessions',
+        countLabel: project.session_count === 1 ? 'sesión' : 'sesiones',
         isActive: project.last_ts != null && project.last_ts * 1000 > activeCutoff,
       }));
     }
@@ -138,7 +144,7 @@ const ProviderCard = ({
       models: project.models,
       lastSeen: project.latest_timestamp,
       count: project.commands.length,
-      countLabel: 'requests',
+      countLabel: 'solicitudes',
       isActive: project.commands.some((c) => new Date(c.timestamp).getTime() > activeCutoff),
     }));
   }, [providerId, exactProjects, providerProjects]);
@@ -194,7 +200,7 @@ const ProviderCard = ({
           {activeSessionCount > 0 && (
             <span className="pcard-active-badge">
               <span className="pcard-active-dot" />
-              {activeSessionCount} active
+              {activeSessionCount} {activeSessionCount === 1 ? 'activa' : 'activas'}
             </span>
           )}
         </div>
@@ -202,12 +208,12 @@ const ProviderCard = ({
           <button
             className="pcard-action-btn"
             onClick={() => setShowRecent((v) => !v)}
-            title="Toggle recent conversations"
+            title="Mostrar/ocultar conversaciones recientes"
             style={showRecent ? { borderColor: 'var(--control-border-strong)' } : undefined}
           >
             <History size={11} />
           </button>
-          <button className="pcard-action-btn" onClick={onRefresh} title="Refresh provider">
+          <button className="pcard-action-btn" onClick={onRefresh} title="Actualizar proveedor">
             <RefreshCw size={11} />
           </button>
         </div>
@@ -224,8 +230,8 @@ const ProviderCard = ({
             <div className="pcard-gauge-legends">
               <div className="pcard-window-compact">
                 <span className="pcard-window-label">{windowLabel(primary)}</span>
-                <span className="pcard-window-pct" style={{ color: arcColor(primaryPct) }}>
-                  {formatWindowPercent(primary)}
+                <span className="pcard-window-pct" style={{ color: primary ? arcColor(primaryPct) : undefined }}>
+                  {primary ? formatWindowPercent(primary) : '—'}
                 </span>
                 <ResetCountdown resetsAt={primary?.resets_at} className="pcard-reset" />
                 <LimitEta forecast={forecastFor(forecasts, primary)} className="pcard-reset" />
@@ -245,11 +251,17 @@ const ProviderCard = ({
 
           {/* Usage bars */}
           <div className="pcard-usage-panel">
-            <div className="pcard-usage-row">
-              <UsageBar pct={primaryPct} label={windowLabel(primary)} />
-              <span className="pcard-usage-detail">{windowValueLabel(primary)}</span>
-              {primary?.note && <span className="pcard-usage-note">{primary.note}</span>}
-            </div>
+            {primary ? (
+              <div className="pcard-usage-row">
+                <UsageBar pct={primaryPct} label={windowLabel(primary)} />
+                <span className="pcard-usage-detail">{windowValueLabel(primary)}</span>
+                {primary.note && <span className="pcard-usage-note">{primary.note}</span>}
+              </div>
+            ) : (
+              <div className="pcard-usage-row">
+                <span className="pcard-usage-note">{snapshot.plan?.note || 'Sin datos de cuota disponibles'}</span>
+              </div>
+            )}
             {secondary && (
               <div className="pcard-usage-row">
                 <UsageBar pct={secondaryPct ?? 0} label={windowLabel(secondary)} />
@@ -267,7 +279,7 @@ const ProviderCard = ({
                   className="pcard-alert-chip"
                   style={{ color: severityColor[alert.severity], borderColor: severityColor[alert.severity] }}
                 >
-                  {alert.window_type} {alert.severity} {alert.utilization.toFixed(0)}%
+                  {alert.window_type} {severityLabel[alert.severity] ?? alert.severity} {alert.utilization.toFixed(0)}%
                 </span>
               ))}
             </div>
@@ -278,9 +290,9 @@ const ProviderCard = ({
         <div className="pcard-right">
           <div className="pcard-section-panel">
             <div className="pcard-section-head">
-              <span className="pcard-section-title">Cost</span>
+              <span className="pcard-section-title">Costo</span>
               <div className="pcard-cost-pills">
-                <span className="pcard-cost-chip">Today {formatUsd(costToday)}</span>
+                <span className="pcard-cost-chip">Hoy {formatUsd(costToday)}</span>
                 <span className="pcard-cost-chip">
                   {trend?.days ?? 30}d {formatUsd(trend?.total_cost_usd ?? 0)}
                 </span>
@@ -294,9 +306,9 @@ const ProviderCard = ({
           <UsageInsights breakdown={breakdown} />
 
           <div className="pcard-section-panel">
-            <span className="pcard-section-title">Models</span>
+            <span className="pcard-section-title">Modelos</span>
             {breakdown.length === 0 ? (
-              <span className="pcard-empty-detail" style={{ fontSize: 8, marginTop: 2 }}>No per-model data yet.</span>
+              <span className="pcard-empty-detail" style={{ fontSize: 8, marginTop: 2 }}>Aún no hay datos por modelo.</span>
             ) : (
               <div className="pcard-model-list">
                 {breakdown.map((entry) => (
@@ -316,11 +328,11 @@ const ProviderCard = ({
       {/* Projects section */}
       <div className="pcard-section-panel pcard-projects-section">
         <div className="pcard-section-head">
-          <span className="pcard-section-title">Projects</span>
-          <span className="pcard-cost-chip">{projectCards.length} projects</span>
+          <span className="pcard-section-title">Proyectos</span>
+          <span className="pcard-cost-chip">{projectCards.length} proyectos</span>
         </div>
         {projectCards.length === 0 ? (
-          <div className="pcard-proj-empty">No project activity detected for this provider yet.</div>
+          <div className="pcard-proj-empty">Aún no se detecta actividad de proyectos para este proveedor.</div>
         ) : (
           <div className="pcard-proj-grid soft-scroll">
             {projectCards.map((project) => (
@@ -330,11 +342,11 @@ const ProviderCard = ({
                     <div className="pcard-proj-title-row">
                       <span className="pcard-proj-title">{project.label}</span>
                       {project.isActive && (
-                        <span className="pcard-proj-active-dot" title="Active in last 15 min" />
+                        <span className="pcard-proj-active-dot" title="Activo en los últimos 15 min" />
                       )}
                     </div>
                     <span className="pcard-proj-path" title={project.path ?? ''}>
-                      {project.path ?? 'session activity'}
+                      {project.path ?? 'actividad de sesión'}
                     </span>
                   </div>
                   <span className="pcard-proj-cost">{formatUsd(project.costUsd)}</span>
@@ -351,11 +363,11 @@ const ProviderCard = ({
                   </span>
                   <span className="pcard-proj-stat">
                     <span className="pcard-proj-stat-val">{project.models.length}</span>
-                    <span className="pcard-proj-stat-label">models</span>
+                    <span className="pcard-proj-stat-label">modelos</span>
                   </span>
                   <span className="pcard-proj-stat">
                     <span className="pcard-proj-stat-val">{project.lastSeen ? formatAge(project.lastSeen) : '—'}</span>
-                    <span className="pcard-proj-stat-label">last seen</span>
+                    <span className="pcard-proj-stat-label">última vez</span>
                   </span>
                 </div>
 
@@ -376,7 +388,7 @@ const ProviderCard = ({
       {showRecent && (
         <div className="pcard-section-panel pcard-recent">
           <div className="pcard-section-head">
-            <span className="pcard-section-title">Recent Conversations</span>
+            <span className="pcard-section-title">Conversaciones recientes</span>
             {breakdown[0] && (
               <span className="pcard-cost-chip" title={`${breakdown[0].model} / ${formatTokens(breakdown[0].total_tokens)} tokens`}>
                 {breakdown[0].model} / {formatTokens(breakdown[0].total_tokens)}
@@ -385,7 +397,7 @@ const ProviderCard = ({
           </div>
           <RecentActivitySlides
             entries={recentActivity}
-            emptyMessage="No recent conversations detected for this provider yet."
+            emptyMessage="Aún no se detectan conversaciones recientes para este proveedor."
             resetKey={providerId}
           />
         </div>

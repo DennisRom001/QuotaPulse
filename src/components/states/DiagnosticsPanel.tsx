@@ -13,7 +13,7 @@ type DiagnosticsPanelProps = {
 
 const DiagnosticsPanel = ({ statuses, snapshots, alerts, globalError }: DiagnosticsPanelProps) => (
   <div className="stg-section stg-diag">
-    <span className="stg-section-title" style={{ marginBottom: 2 }}>Diagnostics</span>
+    <span className="stg-section-title" style={{ marginBottom: 2 }}>Diagnóstico</span>
     {globalError && (
       <div className="stg-diag-error">Error: {globalError}</div>
     )}
@@ -28,9 +28,9 @@ const DiagnosticsPanel = ({ statuses, snapshots, alerts, globalError }: Diagnost
             <span className="stg-diag-name">{provider}</span>
             <span className="stg-diag-status" style={{ color: access.color }}>{access.label}</span>
             <span className="stg-diag-info">
-              {snapshot ? `${snapshot.source} @ ${new Date(snapshot.fetched_at).toLocaleTimeString()}` : 'no data'}
+              {snapshot ? `${snapshot.source} @ ${new Date(snapshot.fetched_at).toLocaleTimeString()}` : 'sin datos'}
             </span>
-            <span className="stg-diag-alerts">{alerts[provider]?.length || 0} alerts</span>
+            <span className="stg-diag-alerts">{alerts[provider]?.length || 0} alertas</span>
           </div>
         );
       })}

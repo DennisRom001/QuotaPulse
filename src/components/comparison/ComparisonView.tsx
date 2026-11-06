@@ -19,6 +19,12 @@ const providerMeta: Record<ProviderId, { label: string; tint: 'claude' | 'codex'
   cursor: { label: 'Cursor', tint: 'cursor', color: '#7c8cff' },
 };
 
+const severityLabel: Record<UsageAlert['severity'], string> = {
+  warning: 'aviso',
+  high: 'alto',
+  critical: 'crítico',
+};
+
 const severityColor: Record<UsageAlert['severity'], string> = {
   warning: '#f59e0b',
   high: '#f97316',
@@ -101,7 +107,7 @@ const ComparisonRow = ({ provider, snapshot, cost, tokens, alerts, status, trend
           </span>
           <div className="overview-card-alerts">
             {burn && (
-              <span className="overview-card-model-chip" title="Token burn between the last two refreshes">
+              <span className="overview-card-model-chip" title="Consumo de tokens entre las dos últimas actualizaciones">
                 {burn}
               </span>
             )}
@@ -112,7 +118,7 @@ const ComparisonRow = ({ provider, snapshot, cost, tokens, alerts, status, trend
                 style={{ color: severityColor[alert.severity], borderColor: severityColor[alert.severity] }}
                 title={alert.message}
               >
-                {alert.severity}
+                {severityLabel[alert.severity] ?? alert.severity}
               </span>
             ))}
           </div>
@@ -121,7 +127,7 @@ const ComparisonRow = ({ provider, snapshot, cost, tokens, alerts, status, trend
         <div className="overview-card-windows">
           <div className="overview-card-window">
             <div className="overview-card-window-head">
-              <span className="widget-provider-window-label">{fiveHour ? '5H' : 'NOW'}</span>
+              <span className="widget-provider-window-label">{fiveHour ? '5H' : 'AHORA'}</span>
               <span className="overview-card-pct" style={{ color: arcColor(pct) }}>
                 {snapshot ? `${pct.toFixed(0)}%` : '—'}
               </span>
@@ -135,11 +141,11 @@ const ComparisonRow = ({ provider, snapshot, cost, tokens, alerts, status, trend
           </div>
           <div className="overview-card-window">
             <span className="overview-card-pct">{formatUsd(cost)}</span>
-            <span className="overview-card-cost-label">{trendDays}d spend</span>
+            <span className="overview-card-cost-label">gasto {trendDays}d</span>
           </div>
           <div className="overview-card-window">
             <span className="overview-card-pct">{formatTokens(tokens)}</span>
-            <span className="overview-card-cost-label">{trendDays}d tokens</span>
+            <span className="overview-card-cost-label">tokens {trendDays}d</span>
           </div>
         </div>
 
@@ -196,22 +202,22 @@ const ComparisonView = ({
     <div className="cmp-root">
       <div className="proj-header">
         <div className="proj-header-left">
-          <span className="proj-header-title">Compare</span>
-          <span className="proj-header-subtitle">Usage, spend and burn side by side · last {trendDays}d</span>
+          <span className="proj-header-title">Comparar</span>
+          <span className="proj-header-subtitle">Uso, gasto y consumo lado a lado · últimos {trendDays}d</span>
         </div>
-        <span className="proj-header-badge">{totalAlerts > 0 ? `${totalAlerts} ${totalAlerts === 1 ? 'alert' : 'alerts'}` : `${providers.length} sources`}</span>
+        <span className="proj-header-badge">{totalAlerts > 0 ? `${totalAlerts} ${totalAlerts === 1 ? 'alerta' : 'alertas'}` : `${providers.length} fuentes`}</span>
       </div>
 
       {/* Spend share across providers (same chrome as provider-page panels). */}
       <div className="pcard-section-panel">
         <div className="pcard-section-head">
-          <span className="pcard-section-title">Spend share</span>
+          <span className="pcard-section-title">Reparto del gasto</span>
           <div className="pcard-cost-pills">
             <span className="pcard-cost-chip">{formatUsd(totalCost)}</span>
             <span className="pcard-cost-chip">{formatTokens(totalTokens)} tok</span>
           </div>
         </div>
-        <div className="pcard-mix-bar" role="img" aria-label="Share of spend by provider">
+        <div className="pcard-mix-bar" role="img" aria-label="Reparto del gasto por proveedor">
           {rows
             .filter((r) => r.cost > 0)
             .map((r) => (
