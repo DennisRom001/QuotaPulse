@@ -886,6 +886,7 @@ mod tests {
             provenance: DataProvenance::Official,
             stale: false,
             badge: None,
+            hint: None,
             sources: Vec::new(),
         }
     }

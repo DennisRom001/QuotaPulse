@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useVisibleInterval } from '@/hooks/usePageVisible';
+import { useMemo, useState } from 'react';
 
 type ResetCountdownProps = {
   resetsAt?: string;
@@ -28,11 +29,8 @@ const countdownUrgency = (target: number, seconds: number): CountdownUrgency => 
 const ResetCountdown = ({ resetsAt, className = 'countdown-text' }: ResetCountdownProps) => {
   const target = useMemo(() => (resetsAt ? new Date(resetsAt).getTime() : 0), [resetsAt]);
   const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(id);
-  }, []);
+  // 1s ticks only while the window is on screen.
+  useVisibleInterval(() => setNow(Date.now()), 1000);
 
   if (!target) return null;
   const sec = Math.max(0, Math.floor((target - now) / 1000));

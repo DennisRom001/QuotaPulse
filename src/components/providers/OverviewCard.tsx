@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useVisibleInterval } from '@/hooks/usePageVisible';
+import { useState } from 'react';
 import ProviderLogo from '@/components/providers/ProviderLogo';
 import { formatRemaining } from '@/components/meters/ResetCountdown';
 import { forecastFor, isLimitImminent } from '@/components/meters/LimitEta';
@@ -83,10 +84,7 @@ const barColor = (window?: UsageWindow) => {
 /** Re-render every 30s so "Resets in" stays current. */
 const useNow = (intervalMs = 30_000) => {
   const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), intervalMs);
-    return () => window.clearInterval(id);
-  }, [intervalMs]);
+  useVisibleInterval(() => setNow(Date.now()), intervalMs);
   return now;
 };
 
@@ -132,6 +130,15 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
   const pct = clampPct(primary?.utilization);
   // Cursor's activity summary sits on its own row under the estimate.
   const showNote = provider === 'cursor' && primary?.accuracy === 'approximate' && !!planInfo?.note;
+  // Gentle advice: from the backend (e.g. Cursor idle for days) or, for the
+  // Cursor estimate, a calibration that is more than a week old.
+  const calibratedAt = useSettingsStore((s) => s.cursorCalibratedAt);
+  const calibrationAgeDays = calibratedAt ? Math.floor((now - Date.parse(calibratedAt)) / 86_400_000) : 0;
+  const hint =
+    snapshot?.hint ??
+    (provider === 'cursor' && primary?.accuracy === 'approximate' && calibrationAgeDays >= 7
+      ? `Calibrado hace ${calibrationAgeDays} días: recalibra con cursor.com/dashboard.`
+      : undefined);
 
   return (
     <div
@@ -182,6 +189,12 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
           </div>
         )}
       </div>
+
+      {hint && (
+        <span className="qp-pcard-hint" role="note">
+          {hint}
+        </span>
+      )}
 
       <div className="qp-pcard-foot">
         <span className="qp-status" style={{ color: access.color }}>

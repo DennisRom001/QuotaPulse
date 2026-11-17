@@ -77,6 +77,7 @@ fn local_log_snapshot(note: Option<String>) -> UsageSnapshot {
         provenance: DataProvenance::DerivedLocal,
         stale: false,
         badge: None,
+        hint: None,
         sources: Vec::new(),
     }
 }
@@ -118,12 +119,19 @@ fn snapshot_from_api(oauth: oauth_fetcher::ClaudeOauthWindow) -> UsageSnapshot {
         provenance: DataProvenance::Internal,
         stale: false,
         badge: None,
+        hint: None,
         sources: Vec::new(),
     }
 }
 
 impl ClaudeProvider {
     async fn resolve(&self, creds: Option<keychain::ClaudeCreds>) -> Result<UsageSnapshot, String> {
+        // `read_credentials` already prefers any fresh token (env, OS store,
+        // file), and the file watcher re-reads them the moment Claude Code
+        // renews its session. So "expired" here means every source is
+        // expired: only Claude Code itself (or a long-lived setup-token) can
+        // renew it, and the card says how.
+        let mut hint = None;
         let note = match creds {
             None => {
                 info!("[claude] no Claude Code credentials found; using local logs");
@@ -131,6 +139,15 @@ impl ClaudeProvider {
             }
             Some(c) if c.is_expired() => {
                 info!("[claude] OAuth token in {} is expired; using local logs", c.source_path);
+                hint = Some(
+                    concat!(
+                        "Sesión de Claude caducada: abre Claude Code (o ejecuta `claude`) ",
+                        "y se renovará sola aquí. Para que no caduque, crea un token de ",
+                        "larga duración con `claude setup-token` y guárdalo en la ",
+                        "variable CLAUDE_CODE_OAUTH_TOKEN."
+                    )
+                    .to_string(),
+                );
                 Some("Claude Code token expired; run `claude` once to renew it.".to_string())
             }
             Some(_) if !self.gate.may_call() => {
@@ -178,7 +195,9 @@ impl ClaudeProvider {
                 None
             }
         };
-        run_blocking(move || local_log_snapshot(note)).await
+        let mut snapshot = run_blocking(move || local_log_snapshot(note)).await?;
+        snapshot.hint = hint;
+        Ok(snapshot)
     }
 }
 

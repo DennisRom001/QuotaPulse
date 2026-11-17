@@ -216,49 +216,52 @@ pub fn restart_per_provider_scheduler(app: &AppHandle, state: &AppState) {
     let last_refresh: Arc<Mutex<HashMap<ProviderId, Instant>>> =
         Arc::new(Mutex::new(HashMap::new()));
     state.scheduler.restart_per_provider(move |provider| {
+        // Decide synchronously whether this tick is due; only then spawn the
+        // refresh task. Idle ticks (the vast majority) cost two mutex reads
+        // and no task allocation.
+        let state = app_handle.state::<AppState>();
+        // Read each mutex separately so the two guards are never held together.
+        let per_provider = state
+            .per_provider_cadence
+            .lock()
+            .ok()
+            .and_then(|g| g.get(&provider).copied());
+        let cadence = match per_provider {
+            Some(c) => c,
+            None => match state.cadence.lock() {
+                Ok(g) => *g,
+                Err(_) => return,
+            },
+        };
+        if cadence == RefreshCadence::Manual {
+            return;
+        }
+
+        // While a Claude Code session is writing transcripts, poll every 30s
+        // so the live 5-hour figure tracks the session; otherwise use
+        // the configured cadence to save API calls.
+        let seconds = if provider == ProviderId::Claude
+            && watchers::activity::is_active(provider, ACTIVE_SESSION_WINDOW)
+        {
+            ACTIVE_SESSION_POLL_SECS.min(cadence.seconds().unwrap_or(u64::MAX))
+        } else {
+            cadence.seconds().unwrap_or_default()
+        };
+        let now = Instant::now();
+        {
+            let Ok(mut guard) = last_refresh.lock() else { return };
+            let due = guard
+                .get(&provider)
+                .is_none_or(|last| now.duration_since(*last) >= Duration::from_secs(seconds));
+            if !due {
+                return;
+            }
+            guard.insert(provider, now);
+        }
+
         let app_inner = app_handle.clone();
-        let last_refresh = last_refresh.clone();
         tauri::async_runtime::spawn(async move {
             let state = app_inner.state::<AppState>();
-            // Read each mutex separately so the two guards are never held together.
-            let per_provider = state
-                .per_provider_cadence
-                .lock()
-                .map_err(|e| e.to_string())?
-                .get(&provider)
-                .copied();
-            let cadence = match per_provider {
-                Some(c) => c,
-                None => *state.cadence.lock().map_err(|e| e.to_string())?,
-            };
-            if cadence == RefreshCadence::Manual {
-                return Ok::<(), String>(());
-            }
-
-            // While a Claude Code session is writing transcripts, poll every 30s
-            // so the live 5-hour figure tracks the session; otherwise use
-            // the configured cadence to save API calls.
-            let seconds = if provider == ProviderId::Claude
-                && watchers::activity::is_active(provider, ACTIVE_SESSION_WINDOW)
-            {
-                ACTIVE_SESSION_POLL_SECS.min(cadence.seconds().unwrap_or(u64::MAX))
-            } else {
-                cadence.seconds().unwrap_or_default()
-            };
-            let now = Instant::now();
-            let eligible = last_refresh
-                .lock()
-                .map_err(|e| e.to_string())?
-                .get(&provider)
-                .map(|last| now.duration_since(*last) >= Duration::from_secs(seconds))
-                .unwrap_or(true);
-            if !eligible {
-                return Ok::<(), String>(());
-            }
-            if let Ok(mut guard) = last_refresh.lock() {
-                guard.insert(provider, now);
-            }
-
             if let Ok(snapshot) = aggregator::refresh_provider(
                 &state.registry,
                 &state.store,
@@ -272,7 +275,6 @@ pub fn restart_per_provider_scheduler(app: &AppHandle, state: &AppState) {
                 }
                 let _ = app_inner.emit("usage-updated", snapshot);
             }
-            Ok(())
         });
     });
 }

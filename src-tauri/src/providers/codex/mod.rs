@@ -141,6 +141,7 @@ fn local_log_snapshot(note: Option<String>) -> UsageSnapshot {
         provenance: DataProvenance::DerivedLocal,
         stale: false,
         badge: None,
+        hint: None,
         sources: Vec::new(),
     }
 }
@@ -188,6 +189,7 @@ impl CodexProvider {
                         provenance: DataProvenance::Internal,
                         stale: false,
                         badge: None,
+                        hint: None,
                         sources: Vec::new(),
                     };
                     self.gate.ok(&snapshot);

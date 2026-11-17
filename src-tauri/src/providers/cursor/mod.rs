@@ -244,6 +244,7 @@ fn snapshot_from(usage: CursorUsage, membership: Option<String>) -> UsageSnapsho
         provenance: DataProvenance::Internal,
         stale: false,
         badge: None,
+        hint: None,
         sources: Vec::new(),
     }
 }
@@ -287,6 +288,9 @@ fn placeholder(note: &str) -> UsageSnapshot {
             note.to_string(),
         ),
     };
+    let hint = activity
+        .as_ref()
+        .and_then(|a| estimate::recalibration_hint(a, estimate::config(), Utc::now()));
     let badge = match (running, in_use) {
         (true, true) => Some("ACTIVE — IN USE"),
         (true, false) => Some("ACTIVE — LOCAL SESSION"),
@@ -305,6 +309,7 @@ fn placeholder(note: &str) -> UsageSnapshot {
         provenance: DataProvenance::DerivedLocal,
         stale: false,
         badge: badge.map(str::to_string),
+        hint,
         sources: Vec::new(),
     }
 }

@@ -318,6 +318,7 @@ pub fn snapshot(provider: ProviderId, base: &str, stats: &ProviderStats) -> Usag
         provenance: DataProvenance::Official,
         stale: false,
         badge: Some(BADGE.to_string()),
+        hint: None,
         sources: Vec::new(),
     }
 }

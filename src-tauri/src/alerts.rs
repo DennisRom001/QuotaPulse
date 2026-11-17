@@ -148,6 +148,7 @@ mod tests {
             provenance: DataProvenance::DerivedLocal,
             stale: false,
             badge: None,
+            hint: None,
             sources: Vec::new(),
         }
     }

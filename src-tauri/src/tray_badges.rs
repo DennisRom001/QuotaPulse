@@ -39,12 +39,12 @@ pub const MENU_BAR_LAYOUT: BadgeLayout = BadgeLayout {
 };
 
 /// Windows notification area: downscaled to a 16px slot (at 100% scaling),
-/// where the 4.1px band becomes ~1.5px. The logo fills most of the slot so it
-/// reads at the same size as the neighbouring icons.
+/// where the 4.8px band becomes ~1.75px: thick enough to read at a glance
+/// without crowding the logo, which fills ~74% of the slot.
 pub const TRAY_LAYOUT: BadgeLayout = BadgeLayout {
-    ring: (17.9, 22.0),
-    logo_radius: 15.6,
-    track_alpha: 0.28,
+    ring: (17.2, 22.0),
+    logo_radius: 16.2,
+    track_alpha: 0.34,
 };
 
 const SLATE_TRACK: [u8; 3] = [0x94, 0xa3, 0xb8]; // slate-400
@@ -318,9 +318,9 @@ mod tests {
     const _: () = assert!(MENU_BAR_LAYOUT.ring.0 > MENU_BAR_LAYOUT.logo_radius);
 
     #[test]
-    fn tray_band_is_about_one_and_a_half_px_at_16px() {
+    fn tray_band_is_about_one_and_three_quarter_px_at_16px() {
         let band = (TRAY_LAYOUT.ring.1 - TRAY_LAYOUT.ring.0) * 16.0 / BADGE_SIZE as f32;
-        assert!((1.3..=1.7).contains(&band), "band {band}px");
+        assert!((1.6..=1.9).contains(&band), "band {band}px");
     }
 
     #[test]

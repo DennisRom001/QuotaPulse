@@ -124,6 +124,28 @@ pub fn window(e: &Estimate) -> UsageWindow {
     )
 }
 
+/// Days without a Cursor prompt after which the estimate is flagged as
+/// probably drifting.
+pub const IDLE_DAYS_BEFORE_RECALIBRATE: i64 = 3;
+
+/// Gentle reminder to recalibrate when the estimate is on but Cursor has
+/// been idle for a few days (the plan may have moved without local prompts,
+/// e.g. usage from another machine or a plan change).
+pub fn recalibration_hint(
+    activity: &CursorActivity,
+    config: EstimateConfig,
+    now: DateTime<Utc>,
+) -> Option<String> {
+    config.monthly_prompts.filter(|n| *n > 0)?;
+    let idle_days = match activity.last_prompt_at {
+        Some(t) => (now - t).num_days(),
+        None => return Some("Sin prompts recientes en Cursor: recalibra con cursor.com/dashboard.".into()),
+    };
+    (idle_days >= IDLE_DAYS_BEFORE_RECALIBRATE).then(|| {
+        format!("Sin actividad en Cursor desde hace {idle_days} días: recalibra con cursor.com/dashboard.")
+    })
+}
+
 /// Budget that makes the estimate equal `actual_percent` right now.
 pub fn calibrate(
     activity: &CursorActivity,
@@ -181,6 +203,18 @@ mod tests {
         let e = estimate(&a, cfg, now).unwrap();
         assert!((e.percent - 23.0).abs() < 0.1, "{}", e.percent);
         assert!(e.projected_percent >= e.percent);
+    }
+
+    #[test]
+    fn recalibration_hint_after_idle_days() {
+        let now = Utc::now();
+        let cfg = EstimateConfig { monthly_prompts: Some(100), cycle_start_day: 1 };
+        let mut a = activity_with(&[now - Duration::days(1)]);
+        a.last_prompt_at = Some(now - Duration::days(1));
+        assert!(recalibration_hint(&a, cfg, now).is_none());
+        a.last_prompt_at = Some(now - Duration::days(4));
+        assert!(recalibration_hint(&a, cfg, now).unwrap().contains("4 días"));
+        assert!(recalibration_hint(&a, EstimateConfig::default(), now).is_none());
     }
 
     #[test]

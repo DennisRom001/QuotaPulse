@@ -136,6 +136,8 @@ export interface UsageSnapshot {
   stale: boolean;
   // Provider-chosen status label (e.g. "ACTIVE — LOCAL SESSION").
   badge?: string;
+  // Short, non-blocking advice for the card (e.g. Cursor "recalibrate").
+  hint?: string;
   // Multi-source providers (Gemini) list every source with its own state.
   sources?: SourceView[];
 }

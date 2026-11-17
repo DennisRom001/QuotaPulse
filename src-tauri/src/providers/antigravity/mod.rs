@@ -137,6 +137,7 @@ impl AntigravityProvider {
                         provenance: DataProvenance::Official,
                         stale: false,
                         badge: None,
+                        hint: None,
                         sources: Vec::new(),
                     });
                 }
@@ -182,6 +183,7 @@ impl AntigravityProvider {
                             provenance: DataProvenance::Internal,
                             stale: false,
                             badge: None,
+                            hint: None,
                             sources: Vec::new(),
                         };
                         self.gate.ok(&snapshot);
@@ -265,6 +267,7 @@ impl AntigravityProvider {
             provenance: DataProvenance::DerivedLocal,
             stale: false,
             badge,
+            hint: None,
             sources: Vec::new(),
         })
     }

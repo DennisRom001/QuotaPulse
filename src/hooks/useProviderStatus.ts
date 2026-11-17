@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useCallback } from 'react';
+import { useVisibleInterval } from '@/hooks/usePageVisible';
 import { ProviderId } from '@/types';
 import { useUsageStore } from '@/stores/usageStore';
 
@@ -9,17 +10,14 @@ const PROVIDERS: ProviderId[] = ['claude', 'codex', 'antigravity', 'cursor'];
 export const useProviderStatus = () => {
   const fetchStatus = useUsageStore((s) => s.fetchStatus);
 
-  useEffect(() => {
-    const run = () => {
-      PROVIDERS.forEach((provider) => {
-        fetchStatus(provider).catch((error) => {
-          console.warn(`[status] ${provider} status check failed`, error);
-        });
+  const run = useCallback(() => {
+    PROVIDERS.forEach((provider) => {
+      fetchStatus(provider).catch((error) => {
+        console.warn(`[status] ${provider} status check failed`, error);
       });
-    };
-
-    run();
-    const id = window.setInterval(run, 60_000);
-    return () => window.clearInterval(id);
+    });
   }, [fetchStatus]);
+
+  // Paused while the window is hidden in the tray; runs again on show.
+  useVisibleInterval(run, 60_000);
 };

@@ -237,6 +237,10 @@ pub struct UsageSnapshot {
     /// running but exposes no readable metrics.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub badge: Option<String>,
+    /// Short, non-blocking advice shown on the card, e.g. Cursor's
+    /// "recalibrate" reminder.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hint: Option<String>,
     /// Every data source the provider checked (e.g. Gemini: Antigravity,
     /// Gemini CLI, API key, desktop app) with its own state, so the UI can let
     /// the user switch between them. Empty for single-source providers.
