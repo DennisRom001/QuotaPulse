@@ -42,6 +42,7 @@ const App = () => {
   const notificationsEnabled = useSettingsStore((s) => s.notificationsEnabled);
   const trayTitleMode = useSettingsStore((s) => s.trayTitleMode);
   const cursorPromptBudget = useSettingsStore((s) => s.cursorPromptBudget);
+  const glassOpacity = useSettingsStore((s) => s.glassOpacity);
   const cursorCycleStartDay = useSettingsStore((s) => s.cursorCycleStartDay);
 
   const isProviderPage = (target: PageId): target is ProviderId =>
@@ -187,6 +188,11 @@ const App = () => {
       console.warn('set_notifications_enabled sync failed', err)
     );
   }, [settingsHydrated, notificationsEnabled]);
+
+  // Liquid Glass: one CSS variable drives every translucent surface.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--glass-opacity', String(glassOpacity ?? 0.72));
+  }, [glassOpacity]);
 
   // Estimated Cursor usage is computed in the backend from local prompt counts.
   useEffect(() => {

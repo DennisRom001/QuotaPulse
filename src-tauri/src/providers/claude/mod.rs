@@ -54,7 +54,7 @@ fn local_log_snapshot(note: Option<String>) -> UsageSnapshot {
     let (day_tokens, week_tokens, _) = log_parser::usage_windows();
     let now = Utc::now();
     let totals = format!(
-        "Local logs: {} tokens today · {} in 7 days.",
+        "Logs locales: {} tokens hoy · {} en 7 días.",
         compact_tokens(day_tokens),
         compact_tokens(week_tokens)
     );
@@ -104,8 +104,8 @@ fn ended_session_hint(s: &keychain::EndedSession) -> String {
         (None, _) => "y borró los tokens".to_string(),
     };
     format!(
-        "Claude Code cerró tu sesión{when} {why}. Ejecuta `claude` en una terminal y escribe `/login`; \
-         QuotaPulse volverá a mostrar la cuota en vivo en cuanto inicies sesión."
+        "Claude Code cerró tu sesión{when} {why}. Pulsa «Iniciar sesión en Claude» (o ejecuta \
+         `claude auth login`); la cuota en vivo volverá sola en cuanto termines."
     )
 }
 
@@ -167,29 +167,29 @@ impl ClaudeProvider {
                         ended.reason, ended.refresh_expired_at, ended.subscription, ended.source_path
                     );
                     hint = Some(ended_session_hint(&ended));
-                    Some("Claude Code session ended; sign in again for live usage.".to_string())
+                    Some("Sesión de Claude Code cerrada; vuelve a iniciar sesión para ver la cuota en vivo.".to_string())
                 }
                 None => {
                     info!("[claude] no Claude Code credentials found; using local logs");
                     hint = Some(
-                        "No se encontró ninguna sesión de Claude Code. Ejecuta `claude` y escribe `/login` para ver la cuota en vivo."
+                        "No se encontró ninguna sesión de Claude Code. Pulsa «Iniciar sesión en Claude» (o ejecuta `claude auth login`) para ver la cuota en vivo."
                             .to_string(),
                     );
-                    Some("Sign in to Claude Code for live plan usage.".to_string())
+                    Some("Sin sesión de Claude Code; inicia sesión para ver la cuota en vivo.".to_string())
                 }
             },
             Some(c) if c.is_expired() => {
                 info!("[claude] OAuth token in {} is expired; using local logs", c.source_path);
                 hint = Some(
                     concat!(
-                        "Sesión de Claude caducada: abre Claude Code (o ejecuta `claude`) ",
-                        "y se renovará sola aquí. Para que no caduque, crea un token de ",
+                        "Sesión de Claude caducada: pulsa «Iniciar sesión en Claude» (o abre ",
+                        "Claude Code) y se renovará sola aquí. Para que no caduque, crea un token de ",
                         "larga duración con `claude setup-token` y guárdalo en la ",
                         "variable CLAUDE_CODE_OAUTH_TOKEN."
                     )
                     .to_string(),
                 );
-                Some("Claude Code token expired; run `claude` once to renew it.".to_string())
+                Some("Sesión de Claude Code caducada; vuelve a iniciar sesión para ver la cuota en vivo.".to_string())
             }
             Some(_) if !self.gate.may_call() => {
                 if let Some(cached) = self.gate.cached() {

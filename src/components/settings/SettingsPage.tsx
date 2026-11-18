@@ -189,6 +189,8 @@ const SettingsPage = () => {
 
   const theme = useSettingsStore((s) => s.theme);
   const setTheme = useSettingsStore((s) => s.setTheme);
+  const glassOpacity = useSettingsStore((s) => s.glassOpacity);
+  const setGlassOpacity = useSettingsStore((s) => s.setGlassOpacity);
   const widgetMode = useSettingsStore((s) => s.widgetMode);
   const enabledProviders = useSettingsStore((s) => s.enabledProviders);
   const setProviderEnabled = useSettingsStore((s) => s.setProviderEnabled);
@@ -385,6 +387,24 @@ const SettingsPage = () => {
                   </button>
                 );
               })}
+            </div>
+            {/* Live preview: the CSS variable updates as the slider moves. */}
+            <div className="stg-startup-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
+              <span className="stg-startup-text">Nivel de transparencia / opacidad del cristal</span>
+              <div className="stg-glass-slider">
+                <span className="stg-startup-text" style={{ flex: 'none' }}>Translúcido</span>
+                <input
+                  type="range"
+                  min={35}
+                  max={95}
+                  step={1}
+                  value={Math.round((glassOpacity ?? 0.72) * 100)}
+                  onChange={(e) => setGlassOpacity(Number(e.target.value) / 100)}
+                  aria-label="Nivel de transparencia u opacidad del cristal"
+                />
+                <span className="stg-startup-text" style={{ flex: 'none' }}>Esmerilado</span>
+                <span className="stg-glass-value">{Math.round((glassOpacity ?? 0.72) * 100)}%</span>
+              </div>
             </div>
           </div>
 

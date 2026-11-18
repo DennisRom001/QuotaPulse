@@ -33,6 +33,7 @@ mod alert_engine;
 mod alerts;
 mod autostart;
 mod budgets;
+mod claude_login;
 mod commands;
 mod exporter;
 mod limit_forecast;
@@ -491,6 +492,7 @@ pub fn run() {
             commands::get_per_provider_cadence,
             commands::set_tray_title_mode,
             commands::set_cursor_estimate,
+            claude_login::trigger_claude_login,
             commands::calibrate_cursor_estimate,
             commands::get_tray_title_mode,
             commands::set_notifications_enabled,

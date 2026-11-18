@@ -1,5 +1,8 @@
 import { useVisibleInterval } from '@/hooks/usePageVisible';
 import { useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import { LogIn } from 'lucide-react';
+import { isTauriRuntime } from '@/utils/runtime';
 import ProviderLogo from '@/components/providers/ProviderLogo';
 import { formatRemaining } from '@/components/meters/ResetCountdown';
 import { forecastFor, isLimitImminent } from '@/components/meters/LimitEta';
@@ -98,6 +101,40 @@ type OverviewCardProps = {
   onClick: () => void;
 };
 
+/**
+ * "Iniciar sesión en Claude": opens a terminal running `claude auth login`.
+ * The card goes back to live quota on its own once Claude Code writes its
+ * credentials (the backend watches that file), which also hides this button.
+ */
+const ClaudeLoginButton = () => {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string>();
+  const run = async (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (!isTauriRuntime()) return;
+    setBusy(true);
+    setMessage(undefined);
+    try {
+      await invoke('trigger_claude_login');
+      setMessage('Terminal abierta: completa el inicio de sesión allí.');
+    } catch (e) {
+      setMessage(String(e));
+    } finally {
+      // Keep the spinner briefly so a double click doesn't open two terminals.
+      window.setTimeout(() => setBusy(false), 2500);
+    }
+  };
+  return (
+    <span className="qp-hint-action">
+      <button type="button" className="qp-hint-btn" onClick={run} onKeyDown={(e) => e.stopPropagation()} disabled={busy}>
+        <LogIn size={12} className={busy ? 'spin-icon' : undefined} />
+        {busy ? 'Abriendo terminal…' : 'Iniciar sesión en Claude'}
+      </button>
+      {message && <span className="qp-hint-msg">{message}</span>}
+    </span>
+  );
+};
+
 const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps) => {
   const meta = providerMeta[provider];
   const now = useNow();
@@ -193,6 +230,8 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
       {hint && (
         <span className="qp-pcard-hint" role="note">
           {hint}
+          {/* Only when Claude has no live session (the hint comes from the backend). */}
+          {provider === 'claude' && snapshot?.hint && snapshot.source === 'local_log' && <ClaudeLoginButton />}
         </span>
       )}
 

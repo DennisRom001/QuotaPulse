@@ -870,3 +870,270 @@ body {
     column-span: all;
   }
 }
+
+.qp-hint-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 8px;
+}
+
+.qp-hint-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--qp-radius-sm);
+  border: 1px solid transparent;
+  background: var(--qp-accent);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qp-hint-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.qp-hint-btn:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.qp-hint-msg {
+  font-size: 11px;
+  color: var(--qp-muted);
+}
+
+/* ═════════════════════════════════════════════════════════════════════════
+   Liquid Glass (v1.2)
+
+   The window is transparent with Windows Acrylic behind it (tauri.conf.json),
+   so the desktop shows through, blurred. Every surface is a translucent tint
+   whose strength follows --glass-opacity (Ajustes → Apariencia, 35–95 %):
+     * window tint  : --qp-bg        (lightest layer)
+     * cards/panels : --qp-surface   (frosted, blur + saturation)
+     * controls     : --qp-surface-2
+   Edges get iOS-style specular light: a brighter top/left hairline plus an
+   inner highlight, over a soft depth shadow. Text colours keep full contrast
+   in both themes, so readability never depends on what is behind the window.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --glass-opacity: 0.72;
+  --qp-radius: 18px;
+  --qp-radius-sm: 11px;
+  --qp-glass-blur: blur(20px) saturate(180%);
+}
+
+:root,
+html[data-theme='dark'] {
+  /* Dark frosted glass: smoky, low glare, soft accents. */
+  --qp-radius: 18px;
+  --qp-radius-sm: 11px;
+  --qp-bg: rgb(14 14 18 / calc(var(--glass-opacity) * 0.82));
+  --qp-surface: rgb(32 32 40 / calc(var(--glass-opacity) * 0.72 + 0.06));
+  --qp-surface-2: rgb(52 52 62 / calc(var(--glass-opacity) * 0.55 + 0.08));
+  --qp-surface-hover: rgb(66 66 78 / calc(var(--glass-opacity) * 0.55 + 0.12));
+  --qp-border: rgb(255 255 255 / 0.08);
+  --qp-border-strong: rgb(255 255 255 / 0.16);
+  --qp-glass-edge: rgb(255 255 255 / 0.18);
+  --qp-glass-highlight: rgb(255 255 255 / 0.10);
+  --qp-shadow: 0 10px 30px rgb(0 0 0 / 0.30), 0 2px 6px rgb(0 0 0 / 0.18);
+  --qp-track: rgb(255 255 255 / 0.10);
+  --qp-live: #4cc9a0;
+  --qp-active: #9aa2ff;
+  --qp-accent: #7078f2;
+}
+
+html[data-theme='light'] {
+  /* Bright frosted glass: white tint, subtle shadows, dark text. */
+  --qp-radius: 18px;
+  --qp-radius-sm: 11px;
+  --qp-bg: rgb(244 247 251 / calc(var(--glass-opacity) * 0.80));
+  --qp-surface: rgb(255 255 255 / calc(var(--glass-opacity) * 0.66 + 0.14));
+  --qp-surface-2: rgb(255 255 255 / calc(var(--glass-opacity) * 0.48 + 0.12));
+  --qp-surface-hover: rgb(255 255 255 / calc(var(--glass-opacity) * 0.5 + 0.3));
+  --qp-border: rgb(15 23 42 / 0.08);
+  --qp-border-strong: rgb(15 23 42 / 0.16);
+  --qp-glass-edge: rgb(255 255 255 / 0.95);
+  --qp-glass-highlight: rgb(255 255 255 / 0.75);
+  --qp-shadow: 0 8px 24px rgb(15 23 42 / 0.10), 0 1px 3px rgb(15 23 42 / 0.06);
+  --qp-track: rgb(15 23 42 / 0.09);
+  --qp-text: #0b1220;
+  --qp-text-2: #273449;
+  --qp-muted: #526077;
+}
+
+/* The page itself is transparent; the lightest tint covers the window. */
+html {
+  background: transparent !important;
+}
+
+body {
+  background: var(--qp-bg) !important;
+}
+
+/* ── Frosted surfaces with specular edges ── */
+.glass-panel,
+.qp-card,
+.overview-card-v2,
+.proj-card,
+.stg-section,
+.stg-provider-card,
+.pcard-root,
+.widget-provider-card,
+.widget-activity-panel {
+  background: var(--qp-surface) !important;
+  -webkit-backdrop-filter: var(--qp-glass-blur) !important;
+  backdrop-filter: var(--qp-glass-blur) !important;
+  border: 1px solid var(--qp-border) !important;
+  border-top-color: var(--qp-glass-edge) !important;
+  border-left-color: color-mix(in srgb, var(--qp-glass-edge) 60%, transparent) !important;
+  border-radius: var(--qp-radius) !important;
+  box-shadow: inset 0 1px 0 var(--qp-glass-highlight), var(--qp-shadow) !important;
+}
+
+.qp-card:hover {
+  background: var(--qp-surface-hover) !important;
+}
+
+/* Header bar: a frosted strip with a light bottom hairline. */
+.nav-bar {
+  background: var(--qp-surface) !important;
+  -webkit-backdrop-filter: var(--qp-glass-blur) !important;
+  backdrop-filter: var(--qp-glass-blur) !important;
+  border-bottom: 1px solid var(--qp-border) !important;
+  box-shadow: inset 0 -1px 0 var(--qp-glass-highlight);
+}
+
+/* Pills, chips and small controls: lighter glass, fully rounded. */
+.nav-pill-row,
+.period-selector,
+.stg-toggle-row,
+.qp-sources {
+  background: var(--qp-surface-2) !important;
+  border: 1px solid var(--qp-border) !important;
+  border-top-color: var(--qp-glass-edge) !important;
+  border-radius: 999px !important;
+  box-shadow: inset 0 1px 0 var(--qp-glass-highlight);
+}
+
+.nav-pill,
+.nav-action-btn,
+.window-btn,
+.qp-source,
+.stg-badge,
+.stg-metric-card,
+.stg-startup-row,
+.stg-pp-card,
+.qp-pcard-hint {
+  border-radius: var(--qp-radius-sm) !important;
+}
+
+.nav-pill-active,
+.nav-pill-active[class*='nav-pill-tint-'],
+.qp-source.is-selected,
+.stg-toggle-active {
+  background: var(--qp-surface) !important;
+  border-color: var(--qp-glass-edge) !important;
+  box-shadow: inset 0 1px 0 var(--qp-glass-highlight), 0 2px 8px rgb(0 0 0 / 0.12) !important;
+}
+
+.window-btn,
+.nav-action-btn {
+  background: var(--qp-surface-2) !important;
+  border: 1px solid var(--qp-border) !important;
+  border-top-color: var(--qp-glass-edge) !important;
+}
+
+/* Rows inside settings cards: one step lighter than the card. */
+.stg-startup-row,
+.stg-pp-card,
+.stg-metric-card,
+.overview-card-window {
+  background: var(--qp-surface-2) !important;
+  border-color: var(--qp-border) !important;
+}
+
+/* ── Provider card: own identity ── */
+.qp-pcard {
+  padding: 16px 16px 14px !important;
+}
+
+/* Logo sits in a small glass lens. */
+.qp-pcard-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--qp-surface-2);
+  border: 1px solid var(--qp-border);
+  border-top-color: var(--qp-glass-edge);
+  box-shadow: inset 0 1px 0 var(--qp-glass-highlight);
+}
+
+.qp-pcard-main {
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+}
+
+/* Percentage as a pill beside the name. */
+.qp-pcard-pct {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: var(--qp-surface-2);
+  border: 1px solid var(--qp-border);
+}
+
+.qp-pcard-name {
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+/* Glassy progress track with a soft glow on the fill. */
+.qp-pcard-bar {
+  height: 7px;
+  background: var(--qp-track);
+  box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.08);
+}
+
+.qp-pcard-bar > span {
+  border-radius: 999px;
+}
+
+.qp-pcard-hint {
+  background: color-mix(in srgb, var(--qp-warn) 12%, var(--qp-surface-2)) !important;
+  -webkit-backdrop-filter: var(--qp-glass-blur);
+  backdrop-filter: var(--qp-glass-blur);
+}
+
+/* ── Appearance: glass opacity slider ── */
+.stg-glass-slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.stg-glass-slider input[type='range'] {
+  flex: 1 1 auto;
+  min-width: 0;
+  accent-color: var(--qp-accent);
+  cursor: pointer;
+}
+
+.stg-glass-value {
+  min-width: 38px;
+  text-align: right;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--qp-text);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-opacity: 0.95 !important;
+  }
+}
