@@ -22,7 +22,6 @@
     "core:window:allow-maximize",
     "core:window:allow-unmaximize",
     "core:window:allow-is-maximized",
-    "core:window:allow-toggle-maximize",
     "core:window:allow-close",
     "core:window:allow-set-size",
     "core:window:allow-set-min-size",

@@ -43,6 +43,7 @@ const App = () => {
   const trayTitleMode = useSettingsStore((s) => s.trayTitleMode);
   const cursorPromptBudget = useSettingsStore((s) => s.cursorPromptBudget);
   const glassOpacity = useSettingsStore((s) => s.glassOpacity);
+  const windowBackdrop = useSettingsStore((s) => s.windowBackdrop);
   const cursorCycleStartDay = useSettingsStore((s) => s.cursorCycleStartDay);
 
   const isProviderPage = (target: PageId): target is ProviderId =>
@@ -193,6 +194,11 @@ const App = () => {
   useEffect(() => {
     document.documentElement.style.setProperty('--glass-opacity', String(glassOpacity ?? 0.72));
   }, [glassOpacity]);
+
+  // Glass base behind the cards (Ajustes → Apariencia), on by default.
+  useEffect(() => {
+    document.documentElement.dataset.backdrop = windowBackdrop === false ? 'off' : 'on';
+  }, [windowBackdrop]);
 
   // Estimated Cursor usage is computed in the backend from local prompt counts.
   useEffect(() => {

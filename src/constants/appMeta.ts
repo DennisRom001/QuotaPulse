@@ -2,7 +2,7 @@
 // version fields, but keeping the frontend values here avoids version strings
 // drifting across multiple React components.
 export const APP_NAME = 'QuotaPulse';
-export const APP_VERSION = '1.2.1';
+export const APP_VERSION = '1.2.2';
 export const APP_AUTHOR = 'Dennis Romero';
 // Public repository URL (the About panel shows a "GitHub Repo" button for it;
 // set it to '' to hide the button).

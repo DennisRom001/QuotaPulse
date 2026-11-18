@@ -3,7 +3,7 @@ mod descriptor;
 mod log_parser;
 
 use async_trait::async_trait;
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use serde_json::Value;
 use tracing::info;
 
@@ -14,13 +14,11 @@ use crate::providers::{
 };
 use crate::usage::models::{
     CostEntry, DataProvenance, DataSource, PlanInfo, ProviderHealth, ProviderId, ProviderStatus,
-    UsageSnapshot, UsageUnit, UsageWindow, WindowType,
+    UsageSnapshot, UsageWindow, WindowType,
 };
 use crate::usage_scanners::codex_home_roots;
 
 /// Approximate token budgets used only when the live API is not reachable.
-const SESSION_TOKEN_LIMIT: u64 = 500_000;
-const WEEKLY_TOKEN_LIMIT: u64 = 5_000_000;
 
 /// ChatGPT (Codex CLI) provider.
 ///
@@ -110,51 +108,96 @@ fn has_local_logs() -> bool {
         .any(|root| root.join("sessions").is_dir() || root.join("archived_sessions").is_dir())
 }
 
-fn local_log_snapshot(note: Option<String>) -> UsageSnapshot {
+/// Snapshot from local Codex logs when no live ChatGPT session is available.
+///
+/// ChatGPT plan limits are not published as token counts, so local tokens
+/// are shown as plain totals — never as a percentage of an invented limit.
+fn local_log_snapshot(note: Option<String>, hint: Option<String>) -> UsageSnapshot {
     let (session, weekly) = log_parser::usage_windows();
     let now = Utc::now();
-    let suffix = note.map(|n| format!(" {n}")).unwrap_or_default();
+    let totals = if has_local_logs() {
+        format!(
+            "Logs locales: {} tokens en la sesión · {} en 7 días.",
+            compact_tokens(session),
+            compact_tokens(weekly)
+        )
+    } else {
+        "Sin registros locales de Codex.".to_string()
+    };
+    let note = match note {
+        Some(n) => format!("{n} {totals}"),
+        None => totals,
+    };
     UsageSnapshot {
         provider: ProviderId::Codex,
-        windows: vec![
-            UsageWindow::approximate(
-                WindowType::Session,
-                session,
-                SESSION_TOKEN_LIMIT,
-                Some(now + Duration::hours(5)),
-                UsageUnit::Tokens,
-                format!("Estimated from local Codex session logs.{suffix}"),
-            ),
-            UsageWindow::approximate(
-                WindowType::Weekly,
-                weekly,
-                WEEKLY_TOKEN_LIMIT,
-                Some(now + Duration::days(7)),
-                UsageUnit::Tokens,
-                "Rolling seven-day total from local Codex logs.",
-            ),
-        ],
+        windows: Vec::new(),
         credits: None,
-        plan: None,
+        plan: Some(PlanInfo {
+            tier: None,
+            note: Some(note),
+        }),
         fetched_at: now,
         source: DataSource::LocalLog,
         provenance: DataProvenance::DerivedLocal,
         stale: false,
         badge: None,
-        hint: None,
+        hint,
         sources: Vec::new(),
     }
 }
 
+fn compact_tokens(n: u64) -> String {
+    match n {
+        0..=999 => n.to_string(),
+        1_000..=999_999 => format!("{:.1}K", n as f64 / 1_000.0),
+        _ => format!("{:.1}M", n as f64 / 1_000_000.0),
+    }
+}
+
+/// Whether Codex CLI looks installed: its home folder or the `codex` command.
+fn codex_installed() -> bool {
+    if codex_home_roots().iter().any(|r| r.is_dir()) {
+        return true;
+    }
+    #[cfg(target_os = "windows")]
+    let names: &[&str] = &["codex.exe", "codex.cmd"];
+    #[cfg(not(target_os = "windows"))]
+    let names: &[&str] = &["codex"];
+    std::env::var_os("PATH")
+        .map(|p| {
+            std::env::split_paths(&p).any(|dir| names.iter().any(|n| dir.join(n).is_file()))
+        })
+        .unwrap_or(false)
+}
+
 impl CodexProvider {
     async fn resolve(&self, auth: Option<CodexAuth>) -> Result<UsageSnapshot, String> {
+        let mut hint = None;
         let note = match auth {
             None => {
-                info!("[codex] no ~/.codex/auth.json login found; using local logs");
-                Some("Run `codex login` for live ChatGPT plan usage.".to_string())
+                if run_blocking(codex_installed).await? {
+                    info!("[codex] Codex CLI found but no ~/.codex/auth.json login; using local logs");
+                    hint = Some(
+                        "Inicia sesión en Codex CLI con `codex login` (cuenta de ChatGPT) para ver la cuota en vivo."
+                            .to_string(),
+                    );
+                } else {
+                    info!("[codex] Codex CLI is not installed (no ~/.codex, no `codex` on PATH)");
+                    hint = Some(
+                        "QuotaPulse lee la cuota de ChatGPT a través de Codex CLI, que no está instalado. \
+                         Instálalo con `npm i -g @openai/codex` y ejecuta `codex login`."
+                            .to_string(),
+                    );
+                }
+                Some("Sin sesión de ChatGPT.".to_string())
             }
             Some(a) if a.expires_at.is_some_and(|exp| exp <= now_unix() + 30) => {
-                Some("ChatGPT token expired; run `codex` once to renew it.".to_string())
+                info!("[codex] ChatGPT token in {} is expired; using local logs", a.source_path);
+                hint = Some(
+                    "La sesión de ChatGPT caducó: abre Codex CLI (`codex`) para renovarla; la cuota en vivo volverá sola."
+                        .to_string(),
+                );
+                Some("Sesión de ChatGPT caducada.".to_string())
             }
             Some(_) if !self.gate.may_call() => {
                 if let Some(cached) = self.gate.cached() {
@@ -205,7 +248,7 @@ impl CodexProvider {
                 }
             },
         };
-        run_blocking(move || local_log_snapshot(note)).await
+        run_blocking(move || local_log_snapshot(note, hint)).await
     }
 }
 

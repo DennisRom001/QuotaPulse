@@ -191,6 +191,8 @@ const SettingsPage = () => {
   const setTheme = useSettingsStore((s) => s.setTheme);
   const glassOpacity = useSettingsStore((s) => s.glassOpacity);
   const setGlassOpacity = useSettingsStore((s) => s.setGlassOpacity);
+  const windowBackdrop = useSettingsStore((s) => s.windowBackdrop);
+  const setWindowBackdrop = useSettingsStore((s) => s.setWindowBackdrop);
   const widgetMode = useSettingsStore((s) => s.widgetMode);
   const enabledProviders = useSettingsStore((s) => s.enabledProviders);
   const setProviderEnabled = useSettingsStore((s) => s.setProviderEnabled);
@@ -387,6 +389,14 @@ const SettingsPage = () => {
                   </button>
                 );
               })}
+            </div>
+            <div className="stg-startup-row">
+              <span className="stg-startup-text">Fondo de ventana (base detrás de tarjetas)</span>
+              <GlassToggle
+                checked={windowBackdrop !== false}
+                onChange={setWindowBackdrop}
+                label={windowBackdrop !== false ? 'Sí' : 'No'}
+              />
             </div>
             {/* Live preview: the CSS variable updates as the slider moves. */}
             <div className="stg-startup-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>

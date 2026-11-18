@@ -1,4 +1,4 @@
-import { GitCompareArrows, FolderKanban, Home, Maximize2, Monitor, Moon, RefreshCw, Settings2, Sun } from 'lucide-react';
+import { GitCompareArrows, FolderKanban, Home, Monitor, Moon, RefreshCw, Settings2, Sun } from 'lucide-react';
 import { Fragment, useMemo } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -113,11 +113,6 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
             <button type="button" aria-label="Minimizar" title="Minimizar" className="window-btn window-btn-minimize"
               onClick={() => { if (isTauriRuntime()) getCurrentWindow().minimize(); }}
             />
-            <button type="button" aria-label="Maximizar o restaurar" title="Maximizar / restaurar" className="window-btn window-btn-maximize"
-              onClick={() => { if (isTauriRuntime()) void getCurrentWindow().toggleMaximize(); }}
-            >
-              <Maximize2 size={10} />
-            </button>
             <button type="button" aria-label="Cerrar" title="Cerrar" className="window-btn window-btn-close"
               onClick={() => { if (isTauriRuntime()) invoke('quit_app'); }}
             />

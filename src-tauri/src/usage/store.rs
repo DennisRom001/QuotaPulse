@@ -8,6 +8,9 @@ use crate::usage::models::{
     TrendPoint, UsageSnapshot, WindowType,
 };
 
+/// Days of utilization history kept (`snapshot_history`).
+pub const SNAPSHOT_HISTORY_DAYS: i64 = 90;
+
 #[derive(Clone)]
 pub struct UsageStore {
     conn: Arc<Mutex<Connection>>,
@@ -174,7 +177,8 @@ impl UsageStore {
             // v3 — utilization history. `snapshots` only keeps the latest row
             // per provider, so nothing could say how fast a window is filling.
             // One row per window per fresh fetch feeds the time-to-limit
-            // forecast; `append_snapshot_history` prunes it to 30 days.
+            // forecast; `append_snapshot_history` prunes it to
+            // `SNAPSHOT_HISTORY_DAYS`.
             conn.execute_batch(
                 "CREATE TABLE IF NOT EXISTS snapshot_history (
                    provider TEXT NOT NULL,
@@ -276,6 +280,9 @@ impl UsageStore {
     /// Append one history row per window of a freshly fetched snapshot, then
     /// drop this provider's rows older than 30 days. A repeat of the same
     /// `fetched_at` is ignored.
+    /// Utilization samples are kept for `SNAPSHOT_HISTORY_DAYS` (matches the
+    /// longest range in the UI, 90d). Daily token/cost rows in `cost_entries`
+    /// are never pruned.
     pub fn append_snapshot_history(&self, snapshot: &UsageSnapshot) -> Result<(), String> {
         let conn = self
             .conn
@@ -298,7 +305,7 @@ impl UsageStore {
             )
             .map_err(|e| e.to_string())?;
         }
-        let cutoff = chrono::Utc::now().timestamp() - 30 * 24 * 60 * 60;
+        let cutoff = chrono::Utc::now().timestamp() - SNAPSHOT_HISTORY_DAYS * 24 * 60 * 60;
         conn.execute(
             "DELETE FROM snapshot_history WHERE provider = ?1 AND ts < ?2",
             params![snapshot.provider.as_str(), cutoff],
@@ -916,10 +923,13 @@ mod tests {
     }
 
     #[test]
-    fn snapshot_history_prunes_rows_older_than_30_days() {
+    fn snapshot_history_keeps_90_days_and_prunes_older_rows() {
         let store = temp_store("history-prune");
         store
-            .append_snapshot_history(&history_snapshot(40 * 24 * 3600, 5.0))
+            .append_snapshot_history(&history_snapshot(100 * 24 * 3600, 5.0))
+            .unwrap();
+        store
+            .append_snapshot_history(&history_snapshot(60 * 24 * 3600, 6.0))
             .unwrap();
         store
             .append_snapshot_history(&history_snapshot(0, 7.0))
@@ -927,8 +937,10 @@ mod tests {
         let rows = store
             .get_snapshot_history(ProviderId::Claude, WindowType::FiveHour, 0)
             .unwrap();
-        assert_eq!(rows.len(), 1);
-        assert_eq!(rows[0].utilization, 7.0);
+        // 100 days old is pruned; 60 days old (inside the 90d range) stays.
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows[0].utilization, 6.0);
+        assert_eq!(rows[1].utilization, 7.0);
     }
 
     #[test]

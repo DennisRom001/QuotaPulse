@@ -705,7 +705,6 @@ body {
 }
 
 .window-btn-minimize::before { content: '\2013'; }
-.window-btn-maximize { display: grid; place-items: center; }
 .window-btn-close::before { content: '\00d7'; font-size: 16px; }
 
 .window-btn:hover {
@@ -1161,4 +1160,30 @@ body,
   :root {
     --glass-opacity: 0.95 !important;
   }
+}
+
+/* ── Window backdrop (Ajustes → Apariencia → "Fondo de ventana") ──
+   A glass base on <body>, which is exactly the window's area (the webview
+   always fills the window, whatever size the user drags it to). It keeps
+   whatever is behind QuotaPulse from mixing with the numbers on the cards.
+   Its strength follows the same --glass-opacity slider. */
+html[data-backdrop='on'] body {
+  background: var(--qp-window-base) !important;
+  border: 1px solid var(--qp-border);
+  border-top-color: var(--qp-glass-edge);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 var(--qp-glass-highlight);
+  -webkit-backdrop-filter: var(--qp-glass-blur);
+  backdrop-filter: var(--qp-glass-blur);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+:root,
+html[data-theme='dark'] {
+  --qp-window-base: rgb(16 16 22 / calc(var(--glass-opacity) * 0.55 + 0.4));
+}
+
+html[data-theme='light'] {
+  --qp-window-base: rgb(240 244 250 / calc(var(--glass-opacity) * 0.55 + 0.4));
 }
