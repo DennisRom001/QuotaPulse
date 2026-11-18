@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { currentMonitor, getCurrentWindow } from '@tauri-apps/api/window';
 import { LogicalSize } from '@tauri-apps/api/dpi';
 import { isTauriRuntime } from '@/utils/runtime';
 
@@ -8,7 +8,11 @@ const WIDGET_SIZE = { width: 360, height: 274 };
 /** Dashboard: freely resizable above a comfortable minimum, no maximum. */
 const DASHBOARD_MIN = { width: 360, height: 420 };
 const DASHBOARD_DEFAULT = { width: 420, height: 640 };
-const SIZE_KEY = 'qp.dashboardSize';
+// v2: sizes saved by v1.2.0 could be near full-screen (an edge-snapped window
+// is not "maximized"), so they are ignored and the default is used once.
+const SIZE_KEY = 'qp.dashboardSize.v2';
+/** Never restore more than this share of the monitor's work area. */
+const MAX_SHARE = 0.8;
 
 const readSavedSize = () => {
   try {
@@ -60,7 +64,18 @@ export const useWidgetResize = (widgetMode: boolean) => {
           await win.setResizable(false);
           return;
         }
-        const size = readSavedSize();
+        if (await win.isMaximized()) await win.unmaximize();
+        const saved = readSavedSize();
+        // Clamp to the current monitor so the window never opens oversized.
+        const monitor = await currentMonitor().catch(() => null);
+        const factor = monitor?.scaleFactor ?? (await win.scaleFactor());
+        const area = monitor ? monitor.size.toLogical(factor) : null;
+        const size = area
+          ? {
+              width: Math.max(DASHBOARD_MIN.width, Math.min(saved.width, Math.round(area.width * MAX_SHARE))),
+              height: Math.max(DASHBOARD_MIN.height, Math.min(saved.height, Math.round(area.height * MAX_SHARE))),
+            }
+          : saved;
         await win.setSize(new LogicalSize(size.width, size.height));
         await win.setSizeConstraints({ minWidth: DASHBOARD_MIN.width, minHeight: DASHBOARD_MIN.height });
         if (cancelled) return;
@@ -69,7 +84,7 @@ export const useWidgetResize = (widgetMode: boolean) => {
           window.clearTimeout(saveTimer);
           saveTimer = window.setTimeout(async () => {
             try {
-              if (await win.isMaximized()) return;
+              if ((await win.isMaximized()) || (await win.isMinimized())) return;
               const factor = await win.scaleFactor();
               const logical = (await win.innerSize()).toLogical(factor);
               saveSize({ width: Math.round(logical.width), height: Math.round(logical.height) });

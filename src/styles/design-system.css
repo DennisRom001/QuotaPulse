@@ -910,11 +910,12 @@ body {
 /* ═════════════════════════════════════════════════════════════════════════
    Liquid Glass (v1.2)
 
-   The window is transparent with Windows Acrylic behind it (tauri.conf.json),
-   so the desktop shows through, blurred. Every surface is a translucent tint
-   whose strength follows --glass-opacity (Ajustes → Apariencia, 35–95 %):
-     * window tint  : --qp-bg        (lightest layer)
-     * cards/panels : --qp-surface   (frosted, blur + saturation)
+   The window itself is fully transparent (no window-wide Acrylic, which
+   tinted the whole window as one grey block): only cards, the header and
+   chips are glass, floating over the desktop. Their tint strength follows
+   --glass-opacity (Ajustes → Apariencia, 35–95 %), with a floor high enough
+   that text stays readable over any wallpaper:
+     * cards/panels : --qp-surface
      * controls     : --qp-surface-2
    Edges get iOS-style specular light: a brighter top/left hairline plus an
    inner highlight, over a soft depth shadow. Text colours keep full contrast
@@ -934,7 +935,7 @@ html[data-theme='dark'] {
   --qp-radius: 18px;
   --qp-radius-sm: 11px;
   --qp-bg: rgb(14 14 18 / calc(var(--glass-opacity) * 0.82));
-  --qp-surface: rgb(32 32 40 / calc(var(--glass-opacity) * 0.72 + 0.06));
+  --qp-surface: rgb(28 28 36 / calc(var(--glass-opacity) * 0.45 + 0.5));
   --qp-surface-2: rgb(52 52 62 / calc(var(--glass-opacity) * 0.55 + 0.08));
   --qp-surface-hover: rgb(66 66 78 / calc(var(--glass-opacity) * 0.55 + 0.12));
   --qp-border: rgb(255 255 255 / 0.08);
@@ -953,7 +954,7 @@ html[data-theme='light'] {
   --qp-radius: 18px;
   --qp-radius-sm: 11px;
   --qp-bg: rgb(244 247 251 / calc(var(--glass-opacity) * 0.80));
-  --qp-surface: rgb(255 255 255 / calc(var(--glass-opacity) * 0.66 + 0.14));
+  --qp-surface: rgb(255 255 255 / calc(var(--glass-opacity) * 0.4 + 0.55));
   --qp-surface-2: rgb(255 255 255 / calc(var(--glass-opacity) * 0.48 + 0.12));
   --qp-surface-hover: rgb(255 255 255 / calc(var(--glass-opacity) * 0.5 + 0.3));
   --qp-border: rgb(15 23 42 / 0.08);
@@ -967,13 +968,37 @@ html[data-theme='light'] {
   --qp-muted: #526077;
 }
 
-/* The page itself is transparent; the lightest tint covers the window. */
-html {
+/* The page and layout containers are 100 % transparent: empty space shows
+   the desktop, and only real surfaces are glass. */
+html,
+body,
+#root,
+.app-layout,
+.qp-shell,
+.main-content,
+.app-header {
   background: transparent !important;
 }
 
-body {
-  background: var(--qp-bg) !important;
+/* Text that would otherwise float straight over the desktop gets its own
+   glass chip, so it is readable on any wallpaper. */
+.proj-header,
+.qp-footer,
+.cmp-legend {
+  background: var(--qp-surface) !important;
+  border: 1px solid var(--qp-border);
+  border-top-color: var(--qp-glass-edge);
+  border-radius: var(--qp-radius-sm);
+  box-shadow: inset 0 1px 0 var(--qp-glass-highlight), var(--qp-shadow);
+  padding: 8px 12px;
+}
+
+.qp-footer {
+  justify-self: center;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+  border-radius: 999px;
 }
 
 /* ── Frosted surfaces with specular edges ── */

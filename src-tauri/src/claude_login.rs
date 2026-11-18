@@ -50,19 +50,34 @@ pub fn trigger_claude_login() -> Result<(), String> {
 fn spawn_terminal(claude: &std::path::Path) -> std::io::Result<()> {
     use std::os::windows::process::CommandExt;
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-    // `start` opens a new, visible console running `cmd /k`, which stays
-    // open after the login so the user can read Claude Code's output. The
-    // outer `cmd` gets no window of its own. The path comes from the file
+    // `start` opens a new, visible console. It explains what is about to
+    // happen, runs `claude auth login`, and then:
+    //   * success → a short confirmation, and the window closes by itself;
+    //   * failure → the error stays on screen until a key is pressed.
+    // The outer `cmd` gets no window of its own. The path comes from the file
     // system (no user input) and is quoted for paths with spaces.
     let path = claude.display().to_string();
     if path.contains('"') {
         return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, "ruta no válida"));
     }
     Command::new("cmd")
-        .raw_arg(format!(r#"/c start "Claude Code - iniciar sesión" cmd /k ""{path}" auth login""#))
+        .raw_arg(windows_command_line(&path))
         .creation_flags(CREATE_NO_WINDOW)
         .spawn()
         .map(|_| ())
+}
+
+/// Command line for the outer `cmd` (see `spawn_terminal`). Messages avoid
+/// accents so they render in any console code page.
+#[cfg(any(target_os = "windows", test))]
+fn windows_command_line(path: &str) -> String {
+    const INTRO: &str = "Abriendo el navegador para iniciar sesion en Claude. \
+        Si te pide un codigo, pegalo abajo y presiona Enter...";
+    const DONE: &str = "Sesion iniciada. Ya puedes volver a QuotaPulse; esta ventana se cerrara sola.";
+    const FAILED: &str = "No se pudo iniciar sesion. Revisa el mensaje de arriba.";
+    format!(
+        r#"/c start "Claude Code - iniciar sesion" cmd /c "echo {INTRO} & echo. & "{path}" auth login && (echo. & echo {DONE} & timeout /t 3 >nul) || (echo. & echo {FAILED} & pause)""#
+    )
 }
 
 #[cfg(target_os = "macos")]
@@ -94,4 +109,18 @@ fn spawn_terminal(claude: &std::path::Path) -> std::io::Result<()> {
         }
     }
     Err(last)
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn windows_command_closes_on_success_and_pauses_on_error() {
+        let line = super::windows_command_line("C:/Users/A B/AppData/Roaming/npm/claude.cmd");
+        assert!(line.starts_with(r#"/c start "Claude Code - iniciar sesion" cmd /c ""#));
+        assert!(line.contains(r#""C:/Users/A B/AppData/Roaming/npm/claude.cmd" auth login &&"#));
+        assert!(line.contains("timeout /t 3") && line.contains("|| (echo. & echo No se pudo"));
+        assert!(!line.contains("cmd /k"));
+        // Balanced quotes, so cmd strips only the outer pair of the inner command.
+        assert_eq!(line.matches('"').count() % 2, 0);
+    }
 }
