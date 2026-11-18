@@ -4,7 +4,7 @@ mod log_parser;
 mod oauth_fetcher;
 
 use async_trait::async_trait;
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use tracing::info;
 
 use crate::providers::auth::{AuthKind, AuthState};
@@ -13,14 +13,12 @@ use crate::providers::{
 };
 use crate::usage::models::{
     CostEntry, CreditsInfo, DataProvenance, DataSource, PlanInfo, ProviderHealth, ProviderId,
-    ProviderStatus, UsageSnapshot, UsageUnit, UsageWindow, WindowType,
+    ProviderStatus, UsageSnapshot, UsageWindow, WindowType,
 };
 use crate::usage_scanners::resolve_claude_project_roots;
 
 /// Approximate Pro-plan token budgets used only when the live API is not
 /// reachable and the meters fall back to local log totals.
-const FIVE_HOUR_TOKEN_LIMIT: u64 = 500_000;
-const SEVEN_DAY_TOKEN_LIMIT: u64 = 5_000_000;
 
 /// Claude Code provider.
 ///
@@ -46,32 +44,32 @@ fn has_local_logs() -> bool {
     resolve_claude_project_roots().iter().any(|p| p.is_dir())
 }
 
+/// Snapshot from local Claude Code logs when no live session is available.
+///
+/// Claude's plan limits are not published as token counts (they depend on
+/// plan, model and seat type), so local tokens are shown as plain totals —
+/// never as a percentage of an invented limit, which used to read e.g. ~87%
+/// while the real weekly usage was 17%.
 fn local_log_snapshot(note: Option<String>) -> UsageSnapshot {
     let (day_tokens, week_tokens, _) = log_parser::usage_windows();
     let now = Utc::now();
-    let suffix = note.map(|n| format!(" {n}")).unwrap_or_default();
+    let totals = format!(
+        "Local logs: {} tokens today · {} in 7 days.",
+        compact_tokens(day_tokens),
+        compact_tokens(week_tokens)
+    );
+    let note = match note {
+        Some(n) => format!("{n} {totals}"),
+        None => totals,
+    };
     UsageSnapshot {
         provider: ProviderId::Claude,
-        windows: vec![
-            UsageWindow::approximate(
-                WindowType::FiveHour,
-                day_tokens,
-                FIVE_HOUR_TOKEN_LIMIT,
-                Some(now + Duration::hours(5)),
-                UsageUnit::Tokens,
-                format!("Estimated from local Claude Code logs.{suffix}"),
-            ),
-            UsageWindow::approximate(
-                WindowType::SevenDay,
-                week_tokens,
-                SEVEN_DAY_TOKEN_LIMIT,
-                Some(now + Duration::days(7)),
-                UsageUnit::Tokens,
-                "Seven-day total from local Claude Code logs.",
-            ),
-        ],
+        windows: Vec::new(),
         credits: None,
-        plan: None,
+        plan: Some(PlanInfo {
+            tier: None,
+            note: Some(note),
+        }),
         fetched_at: now,
         source: DataSource::LocalLog,
         provenance: DataProvenance::DerivedLocal,
@@ -80,6 +78,35 @@ fn local_log_snapshot(note: Option<String>) -> UsageSnapshot {
         hint: None,
         sources: Vec::new(),
     }
+}
+
+fn compact_tokens(n: u64) -> String {
+    match n {
+        0..=999 => n.to_string(),
+        1_000..=999_999 => format!("{:.1}K", n as f64 / 1_000.0),
+        _ => format!("{:.1}M", n as f64 / 1_000_000.0),
+    }
+}
+
+/// Spanish card hint for a session Claude Code ended itself.
+fn ended_session_hint(s: &keychain::EndedSession) -> String {
+    let when = s
+        .refresh_expired_at
+        .and_then(|t| chrono::DateTime::from_timestamp(t as i64, 0))
+        .map(|d| format!(" el {}", d.with_timezone(&chrono::Local).format("%d/%m/%Y")))
+        .unwrap_or_default();
+    let why = match (s.reason.as_deref(), s.subscription.as_deref()) {
+        (Some("time_limit"), Some(plan)) if plan.eq_ignore_ascii_case("team") || plan.eq_ignore_ascii_case("enterprise") => {
+            "por el límite de duración de sesión de tu organización".to_string()
+        }
+        (Some("time_limit"), _) => "por límite de tiempo".to_string(),
+        (Some(r), _) => format!("({r})"),
+        (None, _) => "y borró los tokens".to_string(),
+    };
+    format!(
+        "Claude Code cerró tu sesión{when} {why}. Ejecuta `claude` en una terminal y escribe `/login`; \
+         QuotaPulse volverá a mostrar la cuota en vivo en cuanto inicies sesión."
+    )
 }
 
 fn snapshot_from_api(oauth: oauth_fetcher::ClaudeOauthWindow) -> UsageSnapshot {
@@ -133,10 +160,24 @@ impl ClaudeProvider {
         // renew it, and the card says how.
         let mut hint = None;
         let note = match creds {
-            None => {
-                info!("[claude] no Claude Code credentials found; using local logs");
-                Some("Sign in to Claude Code for live plan usage.".to_string())
-            }
+            None => match run_blocking(keychain::ended_session).await? {
+                Some(ended) => {
+                    info!(
+                        "[claude] Claude Code session ended (loginEnded={:?}, refresh token valid until {:?}, plan {:?}) in {}; sign in again with `claude` → /login",
+                        ended.reason, ended.refresh_expired_at, ended.subscription, ended.source_path
+                    );
+                    hint = Some(ended_session_hint(&ended));
+                    Some("Claude Code session ended; sign in again for live usage.".to_string())
+                }
+                None => {
+                    info!("[claude] no Claude Code credentials found; using local logs");
+                    hint = Some(
+                        "No se encontró ninguna sesión de Claude Code. Ejecuta `claude` y escribe `/login` para ver la cuota en vivo."
+                            .to_string(),
+                    );
+                    Some("Sign in to Claude Code for live plan usage.".to_string())
+                }
+            },
             Some(c) if c.is_expired() => {
                 info!("[claude] OAuth token in {} is expired; using local logs", c.source_path);
                 hint = Some(

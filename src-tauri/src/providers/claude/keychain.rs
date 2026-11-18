@@ -103,6 +103,59 @@ fn parse_creds(raw: &str, source: String) -> Option<ClaudeCreds> {
     })
 }
 
+/// A Claude Code login that Claude Code itself ended: the file/entry is still
+/// there, but the tokens were blanked (e.g. `loginEnded: "time_limit"` when
+/// an organisation's maximum session length is reached). Nothing can renew
+/// it except signing in again.
+#[derive(Debug, Clone, PartialEq)]
+pub struct EndedSession {
+    pub source_path: String,
+    /// `loginEnded` as written by Claude Code, e.g. "time_limit".
+    pub reason: Option<String>,
+    /// When the refresh token stopped being valid (unix seconds).
+    pub refresh_expired_at: Option<u64>,
+    pub subscription: Option<String>,
+}
+
+fn parse_ended(raw: &str, source: String) -> Option<EndedSession> {
+    let json = serde_json::from_str::<Value>(raw.trim()).ok()?;
+    let oauth = json.get("claudeAiOauth")?;
+    let token = oauth.get("accessToken").and_then(Value::as_str).unwrap_or("");
+    if !token.trim().is_empty() {
+        return None;
+    }
+    let str_field = |k: &str| {
+        oauth
+            .get(k)
+            .and_then(Value::as_str)
+            .filter(|v| !v.trim().is_empty())
+            .map(str::to_string)
+    };
+    Some(EndedSession {
+        source_path: source,
+        reason: str_field("loginEnded"),
+        refresh_expired_at: oauth
+            .get("refreshTokenExpiresAt")
+            .and_then(Value::as_u64)
+            .map(|v| if v > 10_000_000_000 { v / 1000 } else { v }),
+        subscription: str_field("subscriptionType"),
+    })
+}
+
+/// The ended Claude Code session, if that is why no token is available.
+pub fn ended_session() -> Option<EndedSession> {
+    let from_store = os_store_blobs()
+        .into_iter()
+        .find_map(|raw| parse_ended(&raw, format!("OS credential store: {KEYCHAIN_SERVICE}")));
+    from_store.or_else(|| {
+        config_roots().into_iter().find_map(|root| {
+            let path = root.join(".credentials.json");
+            let raw = std::fs::read_to_string(&path).ok()?;
+            parse_ended(&raw, path.display().to_string())
+        })
+    })
+}
+
 const ENV_TOKEN: &str = "CLAUDE_CODE_OAUTH_TOKEN";
 
 /// `CLAUDE_CODE_OAUTH_TOKEN`, also when set with `setx` after launch.
@@ -123,6 +176,14 @@ fn from_env() -> Option<ClaudeCreds> {
 }
 
 fn from_os_store() -> Vec<ClaudeCreds> {
+    os_store_blobs()
+        .iter()
+        .filter_map(|secret| parse_creds(secret, format!("OS credential store: {KEYCHAIN_SERVICE}")))
+        .collect()
+}
+
+/// Raw JSON blobs of the `Claude Code-credentials` entry.
+fn os_store_blobs() -> Vec<String> {
     // Claude Code has used both the user name and the service name as the
     // account of this entry, so try both.
     let mut accounts = vec![KEYCHAIN_SERVICE.to_string()];
@@ -137,8 +198,7 @@ fn from_os_store() -> Vec<ClaudeCreds> {
         .iter()
         .filter_map(|account| {
             let entry = keyring::Entry::new(KEYCHAIN_SERVICE, account).ok()?;
-            let secret = entry.get_password().ok()?;
-            parse_creds(&secret, format!("OS credential store: {KEYCHAIN_SERVICE}"))
+            entry.get_password().ok()
         })
         .collect()
 }
@@ -184,4 +244,28 @@ pub fn read_credentials() -> Option<ClaudeCreds> {
         return Some(chosen);
     }
     all.into_iter().max_by_key(|c| c.expires_at.unwrap_or(0))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ended_session_is_recognised_without_tokens() {
+        let raw = r#"{"claudeAiOauth":{"accessToken":"","refreshToken":"","expiresAt":0,
+            "refreshTokenExpiresAt":1794593118865,"subscriptionType":"team",
+            "loginEnded":"time_limit"},"organizationUuid":"x"}"#;
+        assert!(parse_creds(raw, "f".into()).is_none());
+        let ended = parse_ended(raw, "f".into()).unwrap();
+        assert_eq!(ended.reason.as_deref(), Some("time_limit"));
+        assert_eq!(ended.subscription.as_deref(), Some("team"));
+        assert_eq!(ended.refresh_expired_at, Some(1_794_593_118));
+    }
+
+    #[test]
+    fn live_session_is_not_reported_as_ended() {
+        let raw = r#"{"claudeAiOauth":{"accessToken":"abc","expiresAt":4102444800000}}"#;
+        assert!(parse_ended(raw, "f".into()).is_none());
+        assert!(parse_creds(raw, "f".into()).is_some());
+    }
 }
