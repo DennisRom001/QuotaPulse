@@ -82,12 +82,14 @@ fn base_url() -> Option<String> {
     Some(raw.trim_end_matches('/').to_string())
 }
 
+/// LITELLM_API_KEY if the user set one, else the proxy's master key (the
+/// user's LITELLM_MASTER_KEY or the per-install key QuotaPulse generated).
+/// There is no built-in default key.
 fn api_key() -> Option<String> {
     env::lookup("LITELLM_API_KEY")
-        .or_else(|| env::lookup("LITELLM_MASTER_KEY"))
         .map(|(v, _)| v)
-        // The key start-litellm.bat gives the proxy when none is configured.
-        .or_else(|| Some(crate::litellm_launcher::DEFAULT_MASTER_KEY.to_string()))
+        .filter(|v| !v.trim().is_empty())
+        .or_else(crate::litellm_launcher::master_key)
 }
 
 fn client() -> Result<reqwest::Client, String> {

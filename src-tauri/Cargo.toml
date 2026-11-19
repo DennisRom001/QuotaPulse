@@ -1,6 +1,6 @@
 [package]
 name = "quotapulse"
-version = "1.2.2"
+version = "1.2.3"
 description = "Real-time quota monitor for Claude, ChatGPT, Gemini, Cursor and LiteLLM Proxy"
 authors = ["Dennis Romero"]
 license = "MIT"
@@ -42,6 +42,8 @@ reqwest = { version = "0.12.23", default-features = false, features = ["json", "
 base64 = "0.22"
 # Read-only access to the CLI login some Claude Code builds keep in the OS credential store.
 keyring = { version = "3", features = ["windows-native", "apple-native", "sync-secret-service"] }
+# OS RNG for the per-install LiteLLM master key.
+getrandom = "0.3"
 rusqlite = { version = "0.37.0", features = ["bundled"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "registry"] }
