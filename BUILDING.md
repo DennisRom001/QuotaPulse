@@ -75,8 +75,12 @@ actualización va firmada y la app la verifica con la clave pública incluida en
 
 **Publicar una versión:**
 
-1. Sube la versión en `src-tauri/tauri.conf.json`, `package.json`, `src-tauri/Cargo.toml`
-   y `src/constants/appMeta.ts` (por ejemplo `1.0.1`) y haz commit.
+1. Sube la versión (por ejemplo `1.0.1`) en `src-tauri/tauri.conf.json`, `package.json`,
+   `package-lock.json` (las dos primeras apariciones), `src-tauri/Cargo.toml` y la entrada
+   `quotapulse` de `src-tauri/Cargo.lock`, y haz commit. La interfaz lee la versión
+   instalada en tiempo de ejecución, así que no hay ninguna versión escrita a mano en
+   `src/`. CI y Release fallan si `package.json`, `tauri.conf.json` y `Cargo.toml` no
+   coinciden.
 2. Crea y sube la etiqueta correspondiente:
 
 ```bash

@@ -4,71 +4,97 @@
 
 # QuotaPulse
 
-**Monitor de cuotas de IA en tiempo real para Windows**
-Claude · ChatGPT (Codex) · Gemini / Antigravity · Cursor · LiteLLM Proxy
+**Real-time AI quota monitor for Windows — every plan's remaining usage and reset time, at a glance.**
+Claude Code · ChatGPT / Codex CLI · Gemini · Cursor · LiteLLM Proxy
+
+**English** · [Español](README.es.md)
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-111111.svg)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/DennisRom001/QuotaPulse?color=111111)](https://github.com/DennisRom001/QuotaPulse/releases/latest)
+[![Platform: Windows 10/11](https://img.shields.io/badge/platform-Windows%2010%2F11-111111.svg)](#installation-windows)
+[![Built with Tauri 2](https://img.shields.io/badge/built%20with-Tauri%202-111111.svg)](https://tauri.app)
 
 </div>
 
+<!--
+  DEMO — add a GIF or screenshot here, then uncomment the line below.
+  Suggested path: docs/demo.gif (about 900 px wide).
+
+  <p align="center"><img src="docs/demo.gif" alt="QuotaPulse demo" width="720" /></p>
+-->
+
 ---
 
-QuotaPulse es una aplicación de escritorio ligera (Tauri + Rust + React, ~45 MB de RAM) que muestra en una sola ventana cuánto te queda de cada plan de IA. Detecta automáticamente las sesiones que ya tienen tus herramientas en el equipo y consulta **directamente** a cada proveedor, sin servidores intermediarios ni telemetría.
+If you use several AI coding tools at once, you have probably been cut off mid-task because a 5-hour window ran out, or opened three dashboards just to see where you stand. QuotaPulse puts every plan in one small window — or a floating capsule at the top of your screen — so you always know how much is left and when it resets.
 
-## Características
+- **Native and light.** Tauri 2 + Rust + React. The Rust core uses about 30 MB of memory; the UI runs on the system's WebView2 runtime instead of a bundled Chromium.
+- **100% local, no telemetry.** It reuses the sessions your CLIs already have on this machine and talks **directly** to each provider's official API. No account, no QuotaPulse server, no middleman.
+- **Real numbers only.** A percentage on screen is exactly what the provider reported. When there is no live figure, QuotaPulse says so instead of drawing a fake 0% bar.
 
-- **Cuotas en vivo**
-  - **Claude**: ventanas de 5 horas y 7 días desde `api.anthropic.com`, con el login de Claude Code (`~/.claude/.credentials.json`, almacén de credenciales del sistema o `CLAUDE_CODE_OAUTH_TOKEN`). El porcentaje se muestra tal como lo devuelve la API.
-  - **ChatGPT / Codex CLI**: uso de sesión y semanal desde `chatgpt.com`, con el login de `codex login`.
-  - **Gemini**: cascada de fuentes — Antigravity (servidor local, LIVE) → cuota de Gemini CLI (Google Code Assist) → API key de Google AI Studio (ACTIVE) → app de escritorio de Gemini (ACTIVE). En la tarjeta y en la barra superior puedes alternar entre Antigravity y Gemini App.
-  - **Cursor**: detecta si `Cursor.exe` está abierto (`ACTIVE — LOCAL SESSION`) y consulta el uso del plan cuando la sesión es legible.
-  - **LiteLLM Proxy**: si tienes un proxy LiteLLM local, sus métricas (tokens, gasto y presupuestos por proveedor) tienen prioridad y se marcan como `LIVE — LITELLM`.
-- **Tiempo real con poco consumo**: un único vigilante de archivos nativo con *debounce*, sondeo de 30 s mientras hay una sesión de Claude activa y cadencia normal el resto del tiempo; como máximo una llamada a cada API cada 30 s.
-- **Estimaciones locales**: tokens y coste a partir de los logs de Claude Code, Codex CLI y Gemini CLI.
-- **Interfaz compacta**: diseñada para una ventana de 360 px, con modo widget, scroll fluido, barras de 8 px y badges claros (`LIVE` en verde, `ACTIVE` en azul, `LOCAL — AUTH EXPIRED`, etc.). Nunca muestra barras inventadas al 0 %.
-- **Extras**: alertas por umbral, presupuestos, previsión de límite, proyectos/sesiones, exportación CSV/JSON/PDF, icono en la bandeja e inicio con Windows.
+## Supported providers
 
-## Privacidad y seguridad
+| Provider | What QuotaPulse shows | Where it comes from |
+|---|---|---|
+| **Claude Code** | 5-hour and 7-day windows, live | `api.anthropic.com`, using Claude Code's own login |
+| **ChatGPT / Codex CLI** | Session and weekly usage, live | `chatgpt.com`, using the `codex login` session |
+| **Gemini** | Antigravity (live) → Gemini CLI quota → Google AI Studio key → Gemini desktop app | Local Antigravity server, Google Code Assist, AI Studio |
+| **Cursor** | Plan usage when the editor session is readable; otherwise local activity and a calibrated estimate (always marked `~`) | `cursor.com` and Cursor's local state, read-only |
+| **LiteLLM Proxy** | Tokens, spend and budgets per provider (`LIVE — LITELLM`) | Your local proxy on `127.0.0.1` |
 
-- Las credenciales se **leen** de los archivos de cada herramienta; QuotaPulse nunca las modifica, renueva ni guarda.
-- Todas las peticiones salen por HTTPS a una lista cerrada de dominios oficiales (`api.anthropic.com`, `chatgpt.com`, `cloudcode-pa.googleapis.com`, `generativelanguage.googleapis.com`, `cursor.com`), sin proxies ni redirecciones.
-- Los servicios locales (Antigravity, LiteLLM) solo se usan en `127.0.0.1`.
-- Actualizaciones automáticas firmadas desde GitHub Releases: una comprobación al arrancar, desactivable en Ajustes; cada paquete se verifica con la clave pública antes de instalarse.
-- Sin telemetría ni analíticas.
+## Key features
 
-## Requisitos
+- **Floating capsule.** A compact ink pill that stays on top near the top of the screen, with one monogram per AI, its status dot and a thin bar only when a real figure exists. Drag it anywhere; it remembers its position. Click it to show or hide the main window. While it is on, the main window stays off the taskbar. It can be turned off in Settings.
+- **Clean, low-noise design.** Warm paper surfaces, white cards, one ink block for the quota closest to its limit, 4 px progress bars and tabular figures. Light and dark themes, a custom thin-stroke icon set and geometric provider monograms. Built for a 360 px window, with a compact widget mode.
+- **Honest states.** `LIVE`, `ACTIVE`, `LOCAL — AUTH EXPIRED` and so on are shown as reported. Estimates carry a `~` and use a neutral grey; bars turn amber at 70% and red at 90%.
+- **Real time without burning resources.** One native, debounced file watcher, and at most one live API call per provider every 30 seconds.
+- **Threshold alerts and limit forecasts.** Desktop notifications when a quota crosses your thresholds, plus an estimate of when it will run out.
+- **Budgets and history.** Estimated tokens and cost from the local logs of Claude Code, Codex CLI and Gemini CLI, kept for up to 90 days, with project, session and provider-comparison views.
+- **Export.** CSV, JSON, or an HTML report ready for *Print to PDF*.
+- **Desktop citizen.** Tray icon, start with Windows, one-click Claude Code sign-in (opens `claude auth login` in a console) and signed automatic updates.
+- **Interface language:** the UI is currently in Spanish.
 
-- Windows 10/11 (WebView2 incluido en el instalador).
-- Opcional, según lo que quieras monitorizar: Claude Code, Codex CLI, Gemini CLI, Antigravity, Cursor.
-- Opcional para LiteLLM: Python 3.10–3.14.
+## Privacy & security
 
-## Instalación para usuarios
+- **Read-only credentials.** QuotaPulse reads each tool's existing login files and never modifies, refreshes or stores your credentials.
+- **Closed HTTPS allowlist.** Network calls go only to official hosts — `api.anthropic.com`, `chatgpt.com`, `cloudcode-pa.googleapis.com`, `generativelanguage.googleapis.com` and `cursor.com` — over HTTPS, with proxies and redirects disabled.
+- **Local services stay local.** Antigravity and LiteLLM are only contacted on `127.0.0.1`.
+- **Signed updates.** Updates come from GitHub Releases, and every package is verified against the public key built into the app before it is installed. The startup check can be turned off in Settings.
+- **No telemetry, no analytics.**
 
-Si solo quieres usar la aplicación sin necesidad de compilar código:
-1. Ve a la sección de [Releases](https://github.com/DennisRom001/QuotaPulse/releases).
-2. Descarga el archivo instalador ejecutable más reciente (**`QuotaPulse_x.y.z_x64-setup.exe`**).
-3. Ejecútalo en tu PC. No requiere Node.js ni Rust para funcionar.
+## Installation (Windows)
 
-## LiteLLM Proxy (opcional)
+1. Open the [latest release](https://github.com/DennisRom001/QuotaPulse/releases/latest).
+2. Download **`QuotaPulse_x.y.z_x64-setup.exe`** (or the `.msi`).
+3. Run it. No Node.js or Rust needed; WebView2 is included.
 
-`start-litellm.bat` crea un entorno aislado `.venv` junto al script, instala una versión fijada de `litellm[proxy]` y arranca el proxy en `127.0.0.1:4000`. QuotaPulse lo ejecuta automáticamente y sin ventanas al abrirse si el puerto está cerrado (desactívalo con `QP_DISABLE_LITELLM=1`).
-Para que LiteLLM registre gasto por proveedor necesita modelos configurados y una base de datos; consulta la documentación de LiteLLM.
+**Requirements:** Windows 10 or 11. Install whichever tools you want to monitor: Claude Code, Codex CLI, Gemini CLI, Antigravity or Cursor. Later versions install themselves (Settings → About → *Buscar actualizaciones*).
 
-## Configuración
+## Optional: LiteLLM Proxy
 
-Todas las variables son opcionales y están documentadas en [`.env.example`](.env.example) (solo nombres, sin valores). En Windows también se leen del entorno de usuario, así que `setx NOMBRE valor` funciona sin reiniciar la app.
+`start-litellm.bat` creates an isolated `.venv` next to the script, installs pinned, hash-verified `litellm[proxy]` packages and starts the proxy on `127.0.0.1:4000`. QuotaPulse launches it automatically and windowless when the port is closed, using a random per-install master key stored in Windows Credential Manager. Requires Python 3.10–3.14. Set `QP_DISABLE_LITELLM=1` to turn this off.
 
-## Compilar desde el código (Desarrolladores)
+For LiteLLM to report spend per provider it needs configured models and a database — see the LiteLLM documentation.
 
-Si deseas modificar el código fuente o compilar la aplicación por tu cuenta, sigue estos pasos en tu terminal (PowerShell o Git Bash):
+## Configuration
 
-### Prerrequisitos
-- **Node.js** instalado en el sistema.
-- **Rust y Cargo** (si no lo tienes, descárgalo e instálalo desde [rustup.rs](https://rustup.rs/) para evitar errores como `cargo metadata: program not found`).
+Every setting is optional and documented in [`.env.example`](.env.example) (names only, never values). On Windows, QuotaPulse also reads your user environment, so `setx` works without restarting the app:
 
-### Pasos de compilación
+```powershell
+setx QP_DISABLE_LITELLM 1
+```
 
-1. **Clonar el repositorio:**
+## Build from source
+
+### Prerequisites
+
+- **Node.js 20+** and npm
+- **Rust** (stable, MSVC target) — install it from [rustup.rs](https://rustup.rs/)
+- **Visual Studio Build Tools** with the *Desktop development with C++* workload
+
+### Steps
+
 ```bash
-git clone [https://github.com/DennisRom001/QuotaPulse.git](https://github.com/DennisRom001/QuotaPulse.git)
+git clone https://github.com/DennisRom001/QuotaPulse.git
 ```
 
 ```bash
@@ -83,9 +109,8 @@ npm install
 npm run tauri build
 ```
 
-El ejecutable y los instaladores firmados quedan en `src-tauri/target/release/`. Detalles de
-firma y requisitos en [BUILDING.md](BUILDING.md); arquitectura en [ARCHITECTURE.md](ARCHITECTURE.md).
+The executable and installers land in `src-tauri/target/release/`. Use `npm run tauri dev` for development. Signing, releasing and useful paths are in [BUILDING.md](BUILDING.md); the architecture is in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-## Licencia
+## License
 
 [MIT](LICENSE).
