@@ -77,11 +77,21 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
-            --title "QuotaPulse $TAG" \
-            --notes "Installers for QuotaPulse $TAG on Windows, macOS and Linux. Existing installations update themselves (Settings → About → check for updates)."
-          id=$(gh api "repos/$GITHUB_REPOSITORY/releases" --jq ".[] | select(.tag_name == \"$TAG\") | .id" | head -n1)
-          test -n "$id"
+          set -euo pipefail
+          # Take the id straight from the create response. Looking the draft
+          # up afterwards in the release list by tag_name is not reliable (the
+          # v1.5.0 run created the draft but the lookup came back empty).
+          id=$(gh api -X POST "repos/$GITHUB_REPOSITORY/releases" \
+            -f tag_name="$TAG" \
+            -f name="QuotaPulse $TAG" \
+            -f body="Installers for QuotaPulse $TAG on Windows, macOS and Linux. Existing installations update themselves (Settings → About → check for updates)." \
+            -F draft=true -F prerelease=false \
+            --jq '.id')
+          if [ -z "$id" ]; then
+            echo "::error::GitHub did not return a release id for $TAG"
+            exit 1
+          fi
+          echo "Draft release $id for $TAG"
           echo "release_id=$id" >> "$GITHUB_OUTPUT"
 
   build:
