@@ -1,6 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
+import { readFileSync } from "node:fs";
+
+// Build-time fallback for the version shown in the UI (the running app reads
+// the real one with getVersion()). Comes from package.json, never typed by hand.
+const pkgVersion: string = JSON.parse(
+  readFileSync(fileURLToPath(new URL("./package.json", import.meta.url)), "utf8"),
+).version;
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
@@ -12,6 +19,9 @@ export default defineConfig(async () => ({
   // producing a blank white window. Relative paths are robust everywhere.
   base: "./",
   plugins: [react()],
+  define: {
+    __APP_VERSION__: JSON.stringify(pkgVersion),
+  },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

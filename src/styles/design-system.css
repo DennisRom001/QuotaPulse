@@ -1410,3 +1410,14 @@ html[data-theme='dark'] .abt-logo {
     display: none;
   }
 }
+
+/* Update check: a failure says why (404, signature, network…), in red. */
+.abt-update-state {
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.abt-update-state.is-error {
+  color: var(--qp-danger);
+}

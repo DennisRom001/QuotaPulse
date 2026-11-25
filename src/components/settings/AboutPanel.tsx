@@ -5,15 +5,19 @@ import { useState } from 'react';
 import type { Update } from '@tauri-apps/plugin-updater';
 import { checkForUpdate, installUpdate } from '@/utils/updater';
 import GlassButton from '@/components/glass/GlassButton';
-import { APP_AUTHOR, APP_NAME, APP_REPO_URL, APP_VERSION } from '@/constants/appMeta';
+import { APP_AUTHOR, APP_NAME, APP_REPO_URL } from '@/constants/appMeta';
+import { useAppVersion } from '@/hooks/useAppVersion';
 import { isTauriRuntime } from '@/utils/runtime';
 
-const signalCards = [
-  { label: 'Proveedores', value: 'Claude, ChatGPT, Gemini, Cursor', icon: Chip },
-  { label: 'Vistas', value: 'Widget + Panel', icon: Layout },
-  { label: 'Cobertura', value: 'Uso, prompts, estado', icon: Activity },
-  { label: 'Versión', value: `v${APP_VERSION}`, icon: Package },
-] as const;
+const signalCards = (version: string) =>
+  [
+    { label: 'Proveedores', value: 'Claude, ChatGPT, Gemini, Cursor', icon: Chip },
+    { label: 'Vistas', value: 'Widget + Panel', icon: Layout },
+    { label: 'Cobertura', value: 'Uso, prompts, estado', icon: Activity },
+    { label: 'Versión', value: `v${version}`, icon: Package },
+  ] as const;
+
+const clock = () => new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
 
 const openRepo = async () => {
   try {
@@ -39,44 +43,74 @@ const openLogFolder = async () => {
   }
 };
 
-const UpdateCheckButton = () => {
-  const [state, setState] = useState<string>();
+type CheckState = { text: string; tone: 'muted' | 'error'; detail?: string };
+
+const UpdateCheckButton = ({ version }: { version: string }) => {
+  const [state, setState] = useState<CheckState>();
   const [update, setUpdate] = useState<Update>();
+  const [busy, setBusy] = useState(false);
 
   const run = async () => {
+    if (busy) return;
     if (update) {
-      setState(`Instalando v${update.version}…`);
+      setBusy(true);
+      setState({ text: `Instalando v${update.version}…`, tone: 'muted' });
       try {
-        await installUpdate(update, (pct) => setState(`Instalando v${update.version}${pct != null ? ` · ${pct}%` : '…'}`));
+        await installUpdate(update, (pct) =>
+          setState({ text: `Instalando v${update.version}${pct != null ? ` · ${pct}%` : '…'}`, tone: 'muted' }),
+        );
       } catch (e) {
-        setState(`Error al actualizar: ${String(e)}`);
+        // Download, signature or installer failures land here with their reason.
+        setState({ text: `No se pudo instalar v${update.version}: ${String(e)}`, tone: 'error', detail: String(e) });
+      } finally {
+        setBusy(false);
       }
       return;
     }
-    setState('Buscando…');
+    setBusy(true);
+    setState({ text: 'Buscando…', tone: 'muted' });
     const result = await checkForUpdate();
+    setBusy(false);
     if (result.kind === 'available') {
       setUpdate(result.update);
-      setState(`v${result.update.version} disponible`);
+      setState({ text: `v${result.update.version} disponible (tienes v${version})`, tone: 'muted' });
     } else if (result.kind === 'none') {
-      setState('Tienes la última versión');
+      setState({ text: `Tienes la última versión (v${version}) · comprobado a las ${clock()}`, tone: 'muted' });
+    } else if (result.kind === 'unavailable') {
+      setState({ text: 'Las actualizaciones solo se comprueban en la app instalada.', tone: 'muted' });
     } else {
-      setState('Aún no hay ninguna versión publicada');
+      setState({ text: result.message, tone: 'error', detail: result.detail });
     }
   };
 
   return (
     <>
-      <GlassButton variant="default" size="sm" onClick={run} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'center' }}>
-        <Refresh size={12} />
+      <GlassButton
+        variant="default"
+        size="sm"
+        onClick={run}
+        disabled={busy}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'center' }}
+      >
+        <Refresh size={12} className={busy ? 'spin-icon' : undefined} />
         {update ? `Instalar v${update.version} y reiniciar` : 'Buscar actualizaciones'}
       </GlassButton>
-      {state && <span className="abt-update-state">{state}</span>}
+      {state && (
+        <span
+          className={`abt-update-state ${state.tone === 'error' ? 'is-error' : ''}`}
+          role={state.tone === 'error' ? 'alert' : 'status'}
+          title={state.detail}
+        >
+          {state.text}
+        </span>
+      )}
     </>
   );
 };
 
-const AboutPanel = () => (
+const AboutPanel = () => {
+  const version = useAppVersion();
+  return (
   <div className="abt-root">
     {/* Hero */}
     <div className="abt-hero">
@@ -85,7 +119,7 @@ const AboutPanel = () => (
       </div>
       <div className="abt-hero-copy">
         <span className="abt-app-name">{APP_NAME}</span>
-        <span className="stg-badge">v{APP_VERSION}</span>
+        <span className="stg-badge">v{version}</span>
       </div>
       <p className="abt-desc">
         Monitor de uso para Claude, ChatGPT, Gemini y Cursor. Detecta las sesiones locales
@@ -100,7 +134,7 @@ const AboutPanel = () => (
 
     {/* Signal cards */}
     <div className="abt-signals">
-      {signalCards.map((card) => {
+      {signalCards(version).map((card) => {
         const Icon = card.icon;
         return (
           <div key={card.label} className="abt-signal">
@@ -122,7 +156,7 @@ const AboutPanel = () => (
       <div className="abt-version-row">
         <div className="abt-version-cell">
           <span className="abt-version-label">Versión</span>
-          <span className="abt-version-value">{APP_VERSION}</span>
+          <span className="abt-version-value">{version}</span>
         </div>
         <div className="abt-version-cell">
           <span className="abt-version-label">Licencia</span>
@@ -135,13 +169,14 @@ const AboutPanel = () => (
           Repositorio en GitHub
         </GlassButton>
       )}
-      <UpdateCheckButton />
+      <UpdateCheckButton version={version} />
       <GlassButton variant="default" size="sm" onClick={openLogFolder} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'center' }}>
         <FolderOpen size={12} />
         Abrir carpeta de registros
       </GlassButton>
     </div>
   </div>
-);
+  );
+};
 
 export default AboutPanel;

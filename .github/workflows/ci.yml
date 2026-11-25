@@ -15,6 +15,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Versions agree (package.json, tauri.conf.json, Cargo.toml)
+        shell: pwsh
+        run: |
+          $tauri = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          $pkg = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $cargo = ((Select-String -Path src-tauri/Cargo.toml -Pattern '^version\s*=\s*"([^"]+)"' | Select-Object -First 1).Matches.Groups[1].Value)
+          Write-Host "tauri.conf=$tauri package.json=$pkg Cargo.toml=$cargo"
+          if ($pkg -ne $tauri -or $cargo -ne $tauri) {
+            Write-Error "Versions differ: tauri.conf.json=$tauri package.json=$pkg Cargo.toml=$cargo"
+            exit 1
+          }
+
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:

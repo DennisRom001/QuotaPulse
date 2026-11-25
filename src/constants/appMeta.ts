@@ -1,8 +1,9 @@
-// Centralized app metadata used by the UI. Manifest files still carry their own
-// version fields, but keeping the frontend values here avoids version strings
-// drifting across multiple React components.
+// Centralized app metadata used by the UI.
 export const APP_NAME = 'QuotaPulse';
-export const APP_VERSION = '1.2.3';
+// Build-time fallback only (package.json, injected by Vite). The running app
+// shows the real installed version through `useAppVersion()`, which asks the
+// Tauri runtime; never type a version here by hand.
+export const APP_VERSION = __APP_VERSION__;
 export const APP_AUTHOR = 'Dennis Romero';
 // Public repository URL (the About panel shows a "GitHub Repo" button for it;
 // set it to '' to hide the button).
