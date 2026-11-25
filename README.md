@@ -16,12 +16,11 @@ Claude Code · ChatGPT / Codex CLI · Gemini · Cursor · LiteLLM Proxy
 
 </div>
 
-<!--
-  DEMO — add a GIF or screenshot here, then uncomment the line below.
-  Suggested path: docs/demo.gif (about 900 px wide).
-
-  <p align="center"><img src="docs/demo.gif" alt="QuotaPulse demo" width="720" /></p>
--->
+<p align="center">
+  <img src="docs/demo.gif" alt="QuotaPulse demo: dark dashboard, Gemini source switch, light theme and the floating capsule" width="360" />
+  <br />
+  <sub>Demo recorded with sample data.</sub>
+</p>
 
 ---
 

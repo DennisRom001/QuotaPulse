@@ -11,6 +11,12 @@ Claude Code · ChatGPT / Codex CLI · Gemini · Cursor · LiteLLM Proxy
 
 </div>
 
+<p align="center">
+  <img src="docs/demo.gif" alt="Demo de QuotaPulse: panel oscuro, cambio de fuente de Gemini, tema claro y cápsula flotante" width="360" />
+  <br />
+  <sub>Demo grabada con datos de ejemplo.</sub>
+</p>
+
 ---
 
 QuotaPulse es una aplicación de escritorio ligera (Tauri 2 + Rust + React) que muestra en una sola ventana, o en una cápsula flotante en lo alto de la pantalla, cuánto te queda de cada plan de IA y cuándo se reinicia. Detecta automáticamente las sesiones que ya tienen tus herramientas en el equipo y consulta **directamente** a cada proveedor, sin servidores intermediarios ni telemetría.
