@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { History, RefreshCw } from 'lucide-react';
+import { History, Refresh } from '@/components/icons';
 import CostTrendChart from '@/components/charts/CostTrendChart';
 import RecentActivitySlides from '@/components/activity/RecentActivitySlides';
 import ProviderLogo from '@/components/providers/ProviderLogo';
@@ -28,10 +28,10 @@ import { formatUsd } from '@/utils/format';
 import { formatWindowPercent } from '@/utils/percent';
 
 const providerMeta: Record<ProviderId, { name: string; tint: 'claude' | 'codex' | 'antigravity' | 'cursor'; color: string; accent: string }> = {
-  claude: { name: 'Claude', tint: 'claude', color: '#d97757', accent: '217 119 87' },
-  codex: { name: 'ChatGPT', tint: 'codex', color: '#10a37f', accent: '16 163 127' },
-  antigravity: { name: 'Gemini', tint: 'antigravity', color: '#4f6bed', accent: '79 107 237' },
-  cursor: { name: 'Cursor', tint: 'cursor', color: '#7c8cff', accent: '124 140 255' },
+  claude: { name: 'Claude', tint: 'claude', color: 'var(--qp-ink)', accent: '217 119 87' },
+  codex: { name: 'ChatGPT', tint: 'codex', color: 'var(--qp-ink)', accent: '16 163 127' },
+  antigravity: { name: 'Gemini', tint: 'antigravity', color: 'var(--qp-ink)', accent: '79 107 237' },
+  cursor: { name: 'Cursor', tint: 'cursor', color: 'var(--qp-ink)', accent: '124 140 255' },
 };
 
 const severityLabel: Record<UsageAlert['severity'], string> = {
@@ -41,9 +41,9 @@ const severityLabel: Record<UsageAlert['severity'], string> = {
 };
 
 const severityColor: Record<UsageAlert['severity'], string> = {
-  warning: '#f59e0b',
-  high: '#f97316',
-  critical: '#ef4444',
+  warning: 'var(--qp-warn)',
+  high: 'var(--qp-warn)',
+  critical: 'var(--qp-danger)',
 };
 
 const formatTokens = (value: number) => {
@@ -211,10 +211,10 @@ const ProviderCard = ({
             title="Mostrar/ocultar conversaciones recientes"
             style={showRecent ? { borderColor: 'var(--control-border-strong)' } : undefined}
           >
-            <History size={11} />
+            <History size={13} />
           </button>
           <button className="pcard-action-btn" onClick={onRefresh} title="Actualizar proveedor">
-            <RefreshCw size={11} />
+            <Refresh size={13} />
           </button>
         </div>
       </div>
@@ -225,12 +225,12 @@ const ProviderCard = ({
         <div className="pcard-left">
           <div className="pcard-gauge-section">
             <div className="pcard-gauge-wrap">
-              <WidgetGauge provider={providerId} primaryPct={primaryPct} secondaryPct={secondaryPct} />
+              <WidgetGauge provider={providerId} primaryPct={primary ? primaryPct : undefined} secondaryPct={secondary ? secondaryPct : undefined} estimate={primary?.accuracy === 'approximate'} />
             </div>
             <div className="pcard-gauge-legends">
               <div className="pcard-window-compact">
                 <span className="pcard-window-label">{windowLabel(primary)}</span>
-                <span className="pcard-window-pct" style={{ color: primary ? arcColor(primaryPct) : undefined }}>
+                <span className="pcard-window-pct" style={{ color: primary && primary.accuracy !== 'approximate' ? arcColor(primaryPct) : undefined }}>
                   {primary ? formatWindowPercent(primary) : '—'}
                 </span>
                 <ResetCountdown resetsAt={primary?.resets_at} className="pcard-reset" />
@@ -253,7 +253,7 @@ const ProviderCard = ({
           <div className="pcard-usage-panel">
             {primary ? (
               <div className="pcard-usage-row">
-                <UsageBar pct={primaryPct} label={windowLabel(primary)} />
+                <UsageBar pct={primaryPct} label={windowLabel(primary)} estimate={primary.accuracy === 'approximate'} />
                 <span className="pcard-usage-detail">{windowValueLabel(primary)}</span>
                 {primary.note && <span className="pcard-usage-note">{primary.note}</span>}
               </div>
@@ -264,7 +264,7 @@ const ProviderCard = ({
             )}
             {secondary && (
               <div className="pcard-usage-row">
-                <UsageBar pct={secondaryPct ?? 0} label={windowLabel(secondary)} />
+                <UsageBar pct={secondaryPct ?? 0} label={windowLabel(secondary)} estimate={secondary.accuracy === 'approximate'} />
                 <span className="pcard-usage-detail">{windowValueLabel(secondary)}</span>
               </div>
             )}

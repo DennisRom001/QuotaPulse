@@ -1,4 +1,4 @@
-import { AlertTriangle } from 'lucide-react';
+import { Alert } from '@/components/icons';
 
 type ErrorStateProps = {
   message: string;
@@ -7,7 +7,7 @@ type ErrorStateProps = {
 
 const ErrorState = ({ message, onRetry }: ErrorStateProps) => (
   <div className="qp-state is-error" role="alert">
-    <span className="qp-state-icon"><AlertTriangle size={16} /></span>
+    <span className="qp-state-icon"><Alert size={16} /></span>
     <div className="qp-state-title">Algo salió mal</div>
     <div className="qp-state-text">{message}</div>
     {onRetry && (

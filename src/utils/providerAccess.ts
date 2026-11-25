@@ -37,12 +37,15 @@ export const getProviderAccessState = (
   if (snapshot?.badge) {
     // "LIVE — …" badges (e.g. LiteLLM metrics) are real figures: green.
     // "ACTIVE — …" badges mean present/running without figures: blue.
-    const live = snapshot.badge.toUpperCase().startsWith('LIVE');
+    // "LOCAL — …" badges (e.g. "LOCAL — AUTH EXPIRED") are local fallbacks: ochre.
+    const badge = snapshot.badge.toUpperCase();
+    const live = badge.startsWith('LIVE');
+    const local = badge.startsWith('LOCAL');
     return {
-      health: 'active',
+      health: local ? 'waiting' : 'active',
       label: snapshot.badge,
       detail: snapshot.plan?.note || status?.message || snapshot.badge,
-      color: live ? providerAccessColor('active') : ACTIVE_COLOR,
+      color: live ? providerAccessColor('active') : local ? providerAccessColor('waiting') : ACTIVE_COLOR,
     };
   }
 

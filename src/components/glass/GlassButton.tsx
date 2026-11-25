@@ -26,16 +26,15 @@ const GlassButton = ({
   style,
   ...props
 }: GlassButtonProps) => {
-  // Matte buttons: primary = solid indigo, danger / provider = tinted outline.
-  // No gradients or glows (see design-system.css).
+  // Pill buttons: primary = solid ink, danger = red outline, default = quiet
+  // sheet. Providers are never colour-coded, so providerColor is ignored.
+  void providerColor;
   const tone =
     variant === 'primary'
-      ? { background: 'var(--qp-accent)', borderColor: 'transparent', color: '#ffffff' }
+      ? { background: 'var(--qp-ink)', borderColor: 'var(--qp-ink)', color: 'var(--qp-on-ink)' }
       : variant === 'danger'
         ? { background: 'transparent', borderColor: 'var(--qp-danger)', color: 'var(--qp-danger)' }
-        : providerColor
-          ? { background: 'transparent', borderColor: providerColor, color: 'var(--qp-text)' }
-          : {};
+        : {};
 
   return (
     <button
@@ -47,7 +46,7 @@ const GlassButton = ({
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.4 : 1,
         pointerEvents: disabled ? 'none' : undefined,
-        borderRadius: 'var(--qp-radius-sm)',
+        borderRadius: 999,
         fontWeight: 600,
         ...tone,
         ...style,

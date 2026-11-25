@@ -16,10 +16,6 @@ type SettingsState = {
   // Estimated Cursor usage: prompts per cycle that use up the plan (null = off),
   // billing-cycle start day and when it was last calibrated (ISO).
   cursorPromptBudget: number | null;
-  // Liquid Glass tint strength, 0.35 (most translucent) – 0.95 (most frosted).
-  glassOpacity: number;
-  // Glass base behind the cards, covering exactly the window area.
-  windowBackdrop: boolean;
   cursorCycleStartDay: number;
   cursorCalibratedAt: string | null;
   // Global default window used for trend fetches, alerts, and the comparison
@@ -47,8 +43,6 @@ type SettingsState = {
   setSidebarCollapsed: (collapsed: boolean) => void;
   setLaunchAtStartup: (enabled: boolean) => void;
   setAutoUpdateCheck: (enabled: boolean) => void;
-  setGlassOpacity: (value: number) => void;
-  setWindowBackdrop: (enabled: boolean) => void;
   setCursorEstimate: (patch: { budget?: number | null; cycleStartDay?: number; calibratedAt?: string | null }) => void;
   setTrendPreset: (preset: TrendPreset) => void;
   setTrendCustom: (custom: boolean) => void;
@@ -83,8 +77,6 @@ export const useSettingsStore = create<SettingsState>()(
       launchAtStartup: true,
       autoUpdateCheck: true,
       cursorPromptBudget: null,
-      glassOpacity: 0.72,
-      windowBackdrop: true,
       cursorCycleStartDay: 1,
       cursorCalibratedAt: null,
       hydrated: false,
@@ -120,8 +112,6 @@ export const useSettingsStore = create<SettingsState>()(
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
       setLaunchAtStartup: (enabled) => set({ launchAtStartup: enabled }),
       setAutoUpdateCheck: (enabled) => set({ autoUpdateCheck: enabled }),
-      setWindowBackdrop: (enabled) => set({ windowBackdrop: enabled }),
-      setGlassOpacity: (value) => set({ glassOpacity: Math.min(0.95, Math.max(0.35, value)) }),
       setCursorEstimate: (patch) =>
         set((s) => ({
           cursorPromptBudget: patch.budget !== undefined ? patch.budget : s.cursorPromptBudget,
@@ -222,8 +212,6 @@ export const useSettingsStore = create<SettingsState>()(
         launchAtStartup: state.launchAtStartup,
         autoUpdateCheck: state.autoUpdateCheck,
         cursorPromptBudget: state.cursorPromptBudget,
-        glassOpacity: state.glassOpacity,
-        windowBackdrop: state.windowBackdrop,
         cursorCycleStartDay: state.cursorCycleStartDay,
         cursorCalibratedAt: state.cursorCalibratedAt,
         trendPreset: state.trendPreset,

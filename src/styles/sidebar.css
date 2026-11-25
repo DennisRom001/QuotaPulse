@@ -424,7 +424,8 @@
   gap: 5px;
   font-size: 9px;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -661,7 +662,8 @@
 }
 
 .widget-provider-reset {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -727,7 +729,8 @@
 }
 
 .widget-provider-value {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   font-weight: 800;
   line-height: 1;
@@ -911,7 +914,8 @@
 .usage-bar-pct {
   font-size: 10px;
   font-weight: 700;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   width: 28px;
   flex-shrink: 0;
   text-align: right;
@@ -1049,7 +1053,8 @@
 }
 
 .overview-card-pct {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   font-weight: 800;
   line-height: 1;
@@ -1058,7 +1063,8 @@
 }
 
 .overview-card-reset {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1190,7 +1196,8 @@
 }
 
 .overview-card-cost {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   font-weight: 800;
   color: var(--text-primary);
@@ -1402,7 +1409,8 @@
 }
 
 .pcard-window-pct {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -1410,7 +1418,8 @@
 }
 
 .pcard-reset {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1569,7 +1578,8 @@
   font-weight: 700;
   color: var(--text-secondary);
   white-space: nowrap;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1606,7 +1616,8 @@
 }
 
 .pcard-model-cost {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-size: 9px;
   font-weight: 800;
   color: var(--text-primary);
@@ -1760,7 +1771,8 @@
 }
 
 .pcard-proj-cost {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   font-weight: 800;
   color: var(--text-primary);
@@ -1782,7 +1794,8 @@
 }
 
 .pcard-proj-stat-val {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   font-weight: 800;
   color: var(--text-primary);
@@ -1904,7 +1917,8 @@
   font-size: 13px;
   font-weight: 800;
   color: var(--text-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1945,7 +1959,8 @@
   font-size: 11px;
   font-weight: 800;
   color: var(--text-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2018,7 +2033,8 @@
   font-size: 7.5px;
   font-weight: 700;
   color: var(--text-secondary);
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }

@@ -1,0 +1,570 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-25T01:30:33.548Z",
+  "title": "Design System: QuotaPulse",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "tonalRamp": [
+          "#363634",
+          "#646462",
+          "#979794",
+          "#cac9c6",
+          "#f6f5f1",
+          "#f7f6f3",
+          "#f9f8f4",
+          "#faf9f6"
+        ]
+      },
+      "paper-soft": {
+        "role": "neutral",
+        "displayName": "Paper Soft",
+        "tonalRamp": [
+          "#373735",
+          "#666664",
+          "#9b9a98",
+          "#cfcecc",
+          "#faf9f6",
+          "#faf9f6",
+          "#faf9f6",
+          "#faf9f6"
+        ]
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Sheet",
+        "tonalRamp": [
+          "#383837",
+          "#686868",
+          "#9e9e9d",
+          "#d3d3d3",
+          "#fefefd",
+          "#fdfcfb",
+          "#fbfbf8",
+          "#faf9f7"
+        ]
+      },
+      "rail": {
+        "role": "neutral",
+        "displayName": "Rail",
+        "tonalRamp": [
+          "#343432",
+          "#61605d",
+          "#92918d",
+          "#c4c2bd",
+          "#f0eee9",
+          "#f3f2ed",
+          "#f7f5f2",
+          "#f9f8f5"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "tonalRamp": [
+          "#333230",
+          "#5e5d5a",
+          "#8e8c87",
+          "#bdbbb5",
+          "#eae7e1",
+          "#efede8",
+          "#f5f3ef",
+          "#f8f7f4"
+        ]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "#0d0d0c",
+          "#0e0e0d",
+          "#0f0f0f",
+          "#101010",
+          "#4b4b4a",
+          "#868584",
+          "#c0bfbd",
+          "#eae9e6"
+        ]
+      },
+      "ink-secondary": {
+        "role": "neutral",
+        "displayName": "Ink Secondary",
+        "tonalRamp": [
+          "#171715",
+          "#242320",
+          "#31302d",
+          "#3f3d39",
+          "#767470",
+          "#a2a19d",
+          "#cecdc9",
+          "#eeede9"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "tonalRamp": [
+          "#1e1d1b",
+          "#32302d",
+          "#474640",
+          "#5d5b54",
+          "#928f89",
+          "#b5b3ad",
+          "#d7d6d2",
+          "#f0efec"
+        ]
+      },
+      "ink-block": {
+        "role": "primary",
+        "displayName": "Ink Block",
+        "tonalRamp": [
+          "#0d0d0c",
+          "#0e0e0d",
+          "#0f0f0f",
+          "#101010",
+          "#4b4b4a",
+          "#868584",
+          "#c0bfbd",
+          "#eae9e6"
+        ]
+      },
+      "ink-block-text": {
+        "role": "neutral",
+        "displayName": "Ink Block Text",
+        "tonalRamp": [
+          "#363634",
+          "#646462",
+          "#979794",
+          "#cac9c6",
+          "#f6f5f1",
+          "#f7f6f3",
+          "#f9f8f4",
+          "#faf9f6"
+        ]
+      },
+      "ink-block-muted": {
+        "role": "neutral",
+        "displayName": "Ink Block Muted",
+        "tonalRamp": [
+          "#282825",
+          "#484743",
+          "#6a6863",
+          "#8d8a84",
+          "#bdbbb4",
+          "#d2d0ca",
+          "#e6e4e0",
+          "#f4f3f0"
+        ]
+      },
+      "estimate-grey": {
+        "role": "neutral",
+        "displayName": "Estimate Grey",
+        "tonalRamp": [
+          "#282825",
+          "#474642",
+          "#6a6863",
+          "#8c8983",
+          "#bdbab3",
+          "#d1cfca",
+          "#e6e4e0",
+          "#f4f3f0"
+        ]
+      },
+      "live-green": {
+        "role": "secondary",
+        "displayName": "Live Green",
+        "tonalRamp": [
+          "#101f16",
+          "#153523",
+          "#1a4d31",
+          "#1f653f",
+          "#599875",
+          "#8fb9a0",
+          "#c4d9cb",
+          "#ebf0ea"
+        ]
+      },
+      "warn-ochre": {
+        "role": "tertiary",
+        "displayName": "Warn Ochre",
+        "tonalRamp": [
+          "#271a09",
+          "#452a07",
+          "#653c04",
+          "#864e02",
+          "#b7833e",
+          "#ceab7b",
+          "#e4d2b9",
+          "#f4eee5"
+        ]
+      },
+      "danger-red": {
+        "role": "tertiary",
+        "displayName": "Danger Red",
+        "tonalRamp": [
+          "#2a100d",
+          "#4c1510",
+          "#711a13",
+          "#961f16",
+          "#c65950",
+          "#d78e87",
+          "#e9c4bf",
+          "#f5eae6"
+        ]
+      },
+      "charcoal": {
+        "role": "neutral",
+        "displayName": "Charcoal",
+        "tonalRamp": [
+          "#0d0d0c",
+          "#0f0f0e",
+          "#111110",
+          "#131312",
+          "#4e4d4c",
+          "#878785",
+          "#c1c0bd",
+          "#eae9e6"
+        ]
+      },
+      "charcoal-sheet": {
+        "role": "neutral",
+        "displayName": "Charcoal Sheet",
+        "tonalRamp": [
+          "#0f0f0e",
+          "#121211",
+          "#161614",
+          "#191917",
+          "#545351",
+          "#8b8b88",
+          "#c3c2bf",
+          "#eaeae7"
+        ]
+      },
+      "charcoal-raised": {
+        "role": "neutral",
+        "displayName": "Charcoal Raised",
+        "tonalRamp": [
+          "#11110f",
+          "#161614",
+          "#1b1b19",
+          "#21211f",
+          "#5a5a58",
+          "#908f8d",
+          "#c5c4c1",
+          "#ebeae7"
+        ]
+      },
+      "charcoal-rail": {
+        "role": "neutral",
+        "displayName": "Charcoal Rail",
+        "tonalRamp": [
+          "#121211",
+          "#191917",
+          "#20201e",
+          "#282724",
+          "#61605d",
+          "#949390",
+          "#c7c6c3",
+          "#ecebe8"
+        ]
+      },
+      "charcoal-active": {
+        "role": "neutral",
+        "displayName": "Charcoal Active",
+        "tonalRamp": [
+          "#141413",
+          "#1d1d1b",
+          "#282725",
+          "#32312e",
+          "#6a6966",
+          "#9a9996",
+          "#cac9c6",
+          "#edece9"
+        ]
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "tonalRamp": [
+          "#353432",
+          "#62615e",
+          "#93928e",
+          "#c5c3bf",
+          "#f0efea",
+          "#f4f2ee",
+          "#f7f6f2",
+          "#f9f8f5"
+        ]
+      },
+      "chalk-secondary": {
+        "role": "neutral",
+        "displayName": "Chalk Secondary",
+        "tonalRamp": [
+          "#2a2a28",
+          "#4c4b47",
+          "#71706a",
+          "#97948d",
+          "#c6c4bd",
+          "#d8d6d0",
+          "#e9e7e3",
+          "#f5f4f1"
+        ]
+      },
+      "chalk-muted": {
+        "role": "neutral",
+        "displayName": "Chalk Muted",
+        "tonalRamp": [
+          "#232220",
+          "#3c3b37",
+          "#585651",
+          "#73716a",
+          "#a6a49d",
+          "#c2c0bb",
+          "#deddd8",
+          "#f2f1ee"
+        ]
+      },
+      "live-green-dark": {
+        "role": "secondary",
+        "displayName": "Live Green (dark theme)",
+        "tonalRamp": [
+          "#1a2d22",
+          "#2a513b",
+          "#3c7957",
+          "#4ea173",
+          "#84d0a5",
+          "#abdec0",
+          "#d3ebdb",
+          "#eff5ee"
+        ]
+      },
+      "warn-ochre-dark": {
+        "role": "tertiary",
+        "displayName": "Warn Ochre (dark theme)",
+        "tonalRamp": [
+          "#322715",
+          "#5d441f",
+          "#8b652b",
+          "#ba8536",
+          "#e7b66e",
+          "#edcd9b",
+          "#f4e3c9",
+          "#f8f3e9"
+        ]
+      },
+      "danger-red-dark": {
+        "role": "tertiary",
+        "displayName": "Danger Red (dark theme)",
+        "tonalRamp": [
+          "#351e1b",
+          "#63322d",
+          "#954940",
+          "#c75f54",
+          "#f39389",
+          "#f5b5ad",
+          "#f8d7d2",
+          "#f9efec"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "The headline number inside the ink block; the only text above 15 px."
+      },
+      "percent": {
+        "displayName": "Percent",
+        "purpose": "The percentage on each provider card, right-aligned, tabular."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Provider names, section titles and page titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Descriptions, notes, hints and settings text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels, metric captions, pills and segmented options."
+      },
+      "status": {
+        "displayName": "Status",
+        "purpose": "Uppercase LIVE / ACTIVE / LOCAL labels beside their dot."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Paths, commands and identifiers only; never numbers."
+      }
+    },
+    "shadows": [
+      {
+        "name": "sheet-light",
+        "value": "0 1px 2px rgb(17 17 17 / 0.04)",
+        "purpose": "The only shadow: lifts sheets and the active segment in light mode. Dark mode uses hairlines alone."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "0.18s ease",
+        "purpose": "Border, background and switch-knob transitions."
+      },
+      {
+        "name": "bar-fill",
+        "value": "0.35s ease (width)",
+        "purpose": "Usage bars and the ink-block bar growing to a new value."
+      },
+      {
+        "name": "spin",
+        "value": "0.8s linear infinite",
+        "purpose": "Refresh and busy icons only; disabled under reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "window-min",
+        "value": "360px"
+      },
+      {
+        "name": "card-inline-bar",
+        "value": "440px (card container width)"
+      },
+      {
+        "name": "compare-gauge",
+        "value": "480px (gauge hidden below)"
+      },
+      {
+        "name": "overview-2col",
+        "value": "640px"
+      },
+      {
+        "name": "wide-2col-settings",
+        "value": "900px"
+      },
+      {
+        "name": "overview-4col",
+        "value": "1320px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Ink Block",
+      "kind": "card",
+      "refersTo": "ink-block",
+      "description": "The one headline figure per view: the live quota window closest to its limit, printed in a solid ink sheet. With nothing live it holds one plain sentence.",
+      "html": "<section class=\"ds-ink\"><div class=\"ds-ink-head\"><span>Más cerca del límite</span><span class=\"ds-ink-live\"><i></i>En vivo</span></div><div class=\"ds-ink-body\"><span class=\"ds-ink-name\">Claude</span><span class=\"ds-ink-fig\">86%</span></div><div class=\"ds-ink-bar\"><span style=\"width:86%\"></span></div><div class=\"ds-ink-meta\"><span>ventana de 5 h</span><span>Se reinicia en 2h 14m</span></div></section>",
+      "css": ".ds-ink { font-family: Manrope, 'Segoe UI Variable', sans-serif; display: grid; gap: 8px; width: 320px; padding: 14px; border-radius: 14px; background: var(--qp-block-bg, #111111); color: var(--qp-block-text, #F4F3EF); } .ds-ink-head, .ds-ink-body, .ds-ink-meta { display: flex; justify-content: space-between; align-items: center; } .ds-ink-head > span:first-child, .ds-ink-meta { font-size: 10.5px; color: var(--qp-block-muted, #A9A69E); } .ds-ink-meta { font-size: 11px; font-variant-numeric: tabular-nums; } .ds-ink-live { display: inline-flex; gap: 5px; align-items: center; padding: 2px 8px; border-radius: 999px; background: var(--qp-block-rail, rgb(244 243 239 / 0.18)); font-size: 9.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; } .ds-ink-live i { width: 6px; height: 6px; border-radius: 999px; background: #5CC28A; } .ds-ink-name { font-size: 13px; font-weight: 600; } .ds-ink-fig { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; } .ds-ink-bar { height: 4px; border-radius: 999px; background: var(--qp-block-rail, rgb(244 243 239 / 0.18)); overflow: hidden; } .ds-ink-bar span { display: block; height: 100%; border-radius: 999px; background: #E0A040; }"
+    },
+    {
+      "name": "Provider Card",
+      "kind": "card",
+      "refersTo": "sheet-card",
+      "description": "White sheet per provider: monogram, name, right-aligned percent, plan and window, 4 px bar, status and reset countdown.",
+      "html": "<div class=\"ds-pcard\"><div class=\"ds-pcard-top\"><span class=\"ds-mono\">◎</span><span class=\"ds-name\">Gemini</span><span class=\"ds-pct\">52%</span></div><div class=\"ds-sub\"><span>Pro · Cuota diaria</span><span>Se reinicia en 9h 0m</span></div><div class=\"ds-bar\"><span style=\"width:52%\"></span></div><div class=\"ds-status\"><i></i>LIVE</div></div>",
+      "css": ".ds-pcard { font-family: Manrope, 'Segoe UI Variable', sans-serif; display: grid; gap: 8px; width: 320px; padding: 14px; border-radius: 14px; background: var(--qp-surface, #FFFFFF); border: 1px solid var(--qp-border, #E4E1DA); box-shadow: var(--qp-shadow, 0 1px 2px rgb(17 17 17 / 0.04)); color: var(--qp-text, #111111); } .ds-pcard:hover { border-color: var(--qp-border-strong, #CFCBC2); } .ds-pcard-top { display: flex; align-items: center; gap: 10px; } .ds-mono { width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; border: 1px solid var(--qp-border, #E4E1DA); background: var(--qp-surface-2, #FAF9F6); } .ds-name { font-size: 13px; font-weight: 600; flex: 1; } .ds-pct { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; } .ds-sub { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--qp-muted, #6F6C64); font-variant-numeric: tabular-nums; } .ds-bar { height: 4px; border-radius: 999px; background: var(--qp-rail, #ECEAE4); overflow: hidden; } .ds-bar span { display: block; height: 100%; border-radius: 999px; background: var(--qp-ink, #111111); } .ds-status { display: inline-flex; align-items: center; gap: 6px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.05em; color: var(--qp-live, #23784A); } .ds-status i { width: 6px; height: 6px; border-radius: 999px; background: currentColor; }"
+    },
+    {
+      "name": "Usage Bar",
+      "kind": "progress",
+      "refersTo": "usage-bar",
+      "description": "4 px ink line on a rail. Ink below 70 %, ochre 70–89 %, red at 90 % and above, Estimate Grey for estimates (with ~).",
+      "html": "<div class=\"ds-bars\"><div class=\"ds-ub\"><span style=\"width:42%\"></span></div><div class=\"ds-ub\"><span class=\"w\" style=\"width:78%\"></span></div><div class=\"ds-ub\"><span class=\"d\" style=\"width:94%\"></span></div><div class=\"ds-ub\"><span class=\"e\" style=\"width:34%\"></span></div></div>",
+      "css": ".ds-bars { display: grid; gap: 10px; width: 240px; } .ds-ub { height: 4px; border-radius: 999px; background: var(--qp-rail, #ECEAE4); overflow: hidden; } .ds-ub span { display: block; height: 100%; border-radius: 999px; background: var(--qp-ink, #111111); } .ds-ub .w { background: var(--qp-warn, #A15C00); } .ds-ub .d { background: var(--qp-danger, #B42318); } .ds-ub .e { background: var(--qp-estimate, #A8A59D); }"
+    },
+    {
+      "name": "Segmented Pills",
+      "kind": "control",
+      "refersTo": "segmented-track",
+      "description": "Rail track with a 2 px inset; the active option is a sheet chip with a hairline.",
+      "html": "<div class=\"ds-seg\"><button>7d</button><button class=\"on\">30d</button><button>90d</button><button>Personalizado</button></div>",
+      "css": ".ds-seg { font-family: Manrope, 'Segoe UI Variable', sans-serif; display: inline-flex; gap: 2px; padding: 2px; border-radius: 999px; background: var(--qp-rail, #ECEAE4); } .ds-seg button { min-height: 22px; padding: 0 10px; border-radius: 999px; border: 1px solid transparent; background: transparent; color: var(--qp-text-2, #4A4843); font: 600 10.5px Manrope, sans-serif; cursor: pointer; } .ds-seg button.on { background: var(--qp-surface, #FFFFFF); border-color: var(--qp-border, #E4E1DA); color: var(--qp-text, #111111); box-shadow: 0 1px 2px rgb(17 17 17 / 0.04); }"
+    },
+    {
+      "name": "Navigation Pills",
+      "kind": "navigation",
+      "refersTo": "nav-active",
+      "description": "Icon pills; the active page is a solid ink pill with a chalk icon, inactive pills show a rail on hover.",
+      "html": "<nav class=\"ds-nav\"><span class=\"on\">⌂</span><span>▤</span><span>⇄</span></nav>",
+      "css": ".ds-nav { display: inline-flex; gap: 4px; } .ds-nav span { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 999px; color: var(--qp-text-2, #4A4843); } .ds-nav span:hover { background: var(--qp-rail, #ECEAE4); } .ds-nav span.on { background: var(--qp-ink, #111111); color: var(--qp-on-ink, #F4F3EF); }"
+    },
+    {
+      "name": "Hint Box + Action",
+      "kind": "feedback",
+      "refersTo": "button-primary",
+      "description": "Paper-soft inset with an ochre left rule; the fix-it action is an ink pill button.",
+      "html": "<div class=\"ds-hint\">La sesión de Claude terminó. Vuelve a iniciar sesión para ver la cuota en vivo.<button>Iniciar sesión en Claude</button></div>",
+      "css": ".ds-hint { font-family: Manrope, 'Segoe UI Variable', sans-serif; display: grid; gap: 8px; width: 300px; padding: 7px 10px; border-radius: 9px; border: 1px solid var(--qp-border, #E4E1DA); border-left: 2px solid var(--qp-warn, #A15C00); background: var(--qp-surface-2, #FAF9F6); color: var(--qp-text-2, #4A4843); font-size: 11.5px; line-height: 1.45; } .ds-hint button { justify-self: start; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--qp-ink, #111111); background: var(--qp-ink, #111111); color: var(--qp-on-ink, #F4F3EF); font: 600 11.5px Manrope, sans-serif; cursor: pointer; } .ds-hint button:hover { background: var(--qp-ink-hover, #000000); }"
+    },
+    {
+      "name": "Switch",
+      "kind": "control",
+      "refersTo": "button-quiet",
+      "description": "On/off switch: ink track when on, rail when off.",
+      "html": "<button class=\"ds-sw\" aria-pressed=\"true\"><span>Sí</span><i><b></b></i></button>",
+      "css": ".ds-sw { font-family: Manrope, 'Segoe UI Variable', sans-serif; display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; color: var(--qp-text-2, #4A4843); font-size: 10.5px; font-weight: 600; } .ds-sw i { position: relative; width: 28px; height: 16px; border-radius: 999px; background: var(--qp-ink, #111111); } .ds-sw b { position: absolute; top: 2px; left: 14px; width: 12px; height: 12px; border-radius: 999px; background: var(--qp-on-ink, #F4F3EF); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Tinta sobre papel",
+    "overview": "QuotaPulse reads like a well-set printed report that happens to update itself. The ground is warm paper, cards are crisp white sheets with a hairline edge, and the one figure that matters most right now is printed in a solid ink block. Everything else is black ink at three strengths. Numbers are set in tabular figures and aligned like a ledger; progress is a thin ink line on a soft rail; filters are pills you can feel the edge of.\n\nThe register is editorial, clean, tactile and high-contrast: no glass, no glow, no gradient, no tinted blue-grey. Colour is almost absent, so when ochre or red appears on a bar it is unmistakably a warning. Dark mode is the same report printed in chalk on charcoal: neutral, never blue, never neon.\n\nDensity is that of a tray widget. Everything must read at 360 px wide; a wider window gains columns, not bigger type.\n\nConfirmed rejections: generic AI-dashboard looks (gradients, glows, frosted glass, oversized diffuse shadows, blue-tinted greys), fake 0 % bars or percentages when no real figure exists, and decoration that carries no information.",
+    "keyCharacteristics": [
+      "Warm paper ground, white sheet cards, 1 px hairlines, almost no shadow.",
+      "One ink block per view for the headline figure.",
+      "Ink is the only colour for data; ochre and red only for threshold warnings, green only for the LIVE dot.",
+      "4 px progress lines with right-aligned tabular percentages.",
+      "Segmented pills with a high-contrast active state.",
+      "One custom 1.5 px stroke icon set and geometric provider monograms."
+    ],
+    "rules": [
+      {
+        "name": "The Ink Is Data Rule",
+        "body": "Below 70 % a bar is plain ink. Colour on a bar means a threshold was crossed and nothing else; providers are never colour-coded.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Block Rule",
+        "body": "At most one ink block per view. It holds the single most important real figure (the live window closest to its limit). With no live figure it holds a plain-language status, never a placeholder number.",
+        "section": "colors"
+      },
+      {
+        "name": "The Estimate Wears Grey Rule",
+        "body": "An approximate figure is shown with a `~` prefix and an Estimate Grey fill, never ink and never a status colour.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Truth Rule",
+        "body": "Every number that can change (percent, tokens, cost, countdown, reset time) uses `font-variant-numeric: tabular-nums` so nothing jitters on update.",
+        "section": "typography"
+      },
+      {
+        "name": "The Figures Speak Rule",
+        "body": "Size is reserved for numbers. Words never go above 13 px; hierarchy among words comes from weight and ink strength.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Sheet Rule",
+        "body": "If a surface needs a shadow larger than 2 px to be seen, the value step is wrong; fix the colour, not the shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep data in ink; let ochre and red appear only when a threshold is crossed.",
+      "Do put the single most important live figure in the one ink block.",
+      "Do use tabular figures for every changing number and right-align percentages.",
+      "Do design at 360 px first, truncating labels before numbers.",
+      "Do draw every icon from the custom 1.5 px set and every provider with its monogram."
+    ],
+    "donts": [
+      "Don't show a bar, a 0 % or a computed percentage when no real figure exists; write a plain-language note instead.",
+      "Don't use gradients, glows, neon, glass, backdrop blur or shadows larger than 2 px.",
+      "Don't use blue-tinted greys anywhere; every neutral is warm (light) or neutral charcoal (dark).",
+      "Don't colour-code providers or put more than one ink block in a view.",
+      "Don't import an icon library or use the providers' official logos inside the interface.",
+      "Don't let any element cause horizontal page scroll at 360 px."
+    ]
+  }
+}

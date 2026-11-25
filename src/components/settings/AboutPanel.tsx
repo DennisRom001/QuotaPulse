@@ -1,4 +1,4 @@
-import { Activity, Cpu, FolderOpen, Github, LayoutDashboard, Package, RefreshCw } from 'lucide-react';
+import { Activity, Chip, FolderOpen, ExternalLink, Layout, Package, Refresh } from '@/components/icons';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { invoke } from '@tauri-apps/api/core';
 import { useState } from 'react';
@@ -9,8 +9,8 @@ import { APP_AUTHOR, APP_NAME, APP_REPO_URL, APP_VERSION } from '@/constants/app
 import { isTauriRuntime } from '@/utils/runtime';
 
 const signalCards = [
-  { label: 'Proveedores', value: 'Claude, ChatGPT, Gemini, Cursor', icon: Cpu },
-  { label: 'Vistas', value: 'Widget + Panel', icon: LayoutDashboard },
+  { label: 'Proveedores', value: 'Claude, ChatGPT, Gemini, Cursor', icon: Chip },
+  { label: 'Vistas', value: 'Widget + Panel', icon: Layout },
   { label: 'Cobertura', value: 'Uso, prompts, estado', icon: Activity },
   { label: 'Versión', value: `v${APP_VERSION}`, icon: Package },
 ] as const;
@@ -68,7 +68,7 @@ const UpdateCheckButton = () => {
   return (
     <>
       <GlassButton variant="default" size="sm" onClick={run} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'center' }}>
-        <RefreshCw size={12} />
+        <Refresh size={12} />
         {update ? `Instalar v${update.version} y reiniciar` : 'Buscar actualizaciones'}
       </GlassButton>
       {state && <span className="abt-update-state">{state}</span>}
@@ -81,7 +81,7 @@ const AboutPanel = () => (
     {/* Hero */}
     <div className="abt-hero">
       <div className="abt-logo-frame">
-        <img src="/quotapulse-icon.png" alt="QuotaPulse" className="abt-logo" />
+        <img src="/quotapulse-mark.svg" alt="QuotaPulse" className="abt-logo" />
       </div>
       <div className="abt-hero-copy">
         <span className="abt-app-name">{APP_NAME}</span>
@@ -131,7 +131,7 @@ const AboutPanel = () => (
       </div>
       {APP_REPO_URL && (
         <GlassButton variant="primary" size="sm" onClick={openRepo} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'center' }}>
-          <Github size={12} />
+          <ExternalLink size={12} />
           Repositorio en GitHub
         </GlassButton>
       )}

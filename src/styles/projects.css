@@ -187,7 +187,8 @@
 }
 
 .proj-card-cost {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   font-weight: 800;
   color: var(--text-primary);

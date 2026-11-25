@@ -1,38 +1,27 @@
-import { CSSProperties, PropsWithChildren, useRef } from 'react';
-import { useSpecularHighlight } from '@/hooks/useSpecularHighlight';
+import { CSSProperties, PropsWithChildren } from 'react';
 
 type Tint = 'claude' | 'codex' | 'antigravity' | 'cursor' | 'neutral';
 
 type GlassPanelProps = PropsWithChildren<{
   className?: string;
+  // Kept for API compatibility: providers are never colour-coded, so every
+  // tint renders the same solid sheet.
   tint?: Tint;
   style?: CSSProperties;
   onClick?: () => void;
   title?: string;
 }>;
 
-const tintClass: Record<Tint, string> = {
-  claude: 'glass-claude',
-  codex: 'glass-codex',
-  antigravity: 'glass-antigravity',
-  cursor: 'glass-cursor',
-  neutral: '',
-};
-
-const GlassPanel = ({ children, className = '', tint = 'neutral', style, onClick, title }: GlassPanelProps) => {
-  const ref = useRef<HTMLDivElement>(null);
-  useSpecularHighlight(ref);
-  return (
-    <div
-      ref={ref}
-      className={`glass-panel ${tintClass[tint]} ${className}`.trim()}
-      style={style}
-      onClick={onClick}
-      title={title}
-    >
-      {children}
-    </div>
-  );
-};
+// A solid sheet card (the name is historical; there is no glass any more).
+const GlassPanel = ({ children, className = '', style, onClick, title }: GlassPanelProps) => (
+  <div
+    className={`glass-panel ${className}`.trim()}
+    style={style}
+    onClick={onClick}
+    title={title}
+  >
+    {children}
+  </div>
+);
 
 export default GlassPanel;

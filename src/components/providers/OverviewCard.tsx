@@ -1,7 +1,7 @@
 import { useVisibleInterval } from '@/hooks/usePageVisible';
 import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { LogIn } from 'lucide-react';
+import { LogIn } from '@/components/icons';
 import { isTauriRuntime } from '@/utils/runtime';
 import ProviderLogo from '@/components/providers/ProviderLogo';
 import { formatRemaining } from '@/components/meters/ResetCountdown';
@@ -15,7 +15,7 @@ import {
   UsageSnapshot,
   UsageWindow,
 } from '@/types';
-import { getProviderAccessState } from '@/utils/providerAccess';
+import { ACTIVE_COLOR, getProviderAccessState } from '@/utils/providerAccess';
 import { displayWindows } from '@/utils/usageWindows';
 import { useUsageStore } from '@/stores/usageStore';
 import { formatWindowPercent } from '@/utils/percent';
@@ -74,14 +74,13 @@ const usageLine = (primary?: UsageWindow, secondary?: UsageWindow): string => {
   return main;
 };
 
-/** Soft accent by usage; neutral for local estimates. */
-const barColor = (window?: UsageWindow) => {
-  if (!window) return 'var(--qp-faint)';
-  if (window.accuracy === 'approximate') return 'var(--qp-faint)';
+/** Ink Is Data: plain ink below 70 %, ochre / red only past a threshold, grey for estimates. */
+export const barColor = (window?: UsageWindow) => {
+  if (!window || window.accuracy === 'approximate') return 'var(--qp-estimate)';
   const pct = clampPct(window.utilization);
   if (pct >= 90) return 'var(--qp-danger)';
   if (pct >= 70) return 'var(--qp-warn)';
-  return 'var(--qp-live)';
+  return 'var(--qp-ink)';
 };
 
 /** Re-render every 30s so "Resets in" stays current. */
@@ -193,7 +192,7 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
     >
       <div className={`qp-pcard-main ${showNote ? 'has-note' : ''}`}>
         <span className="qp-pcard-logo">
-          <ProviderLogo provider={provider} size={22} variant="widget-core" />
+          <ProviderLogo provider={provider} size={18} />
         </span>
 
         <div className="qp-pcard-title">
@@ -236,8 +235,11 @@ const OverviewCard = ({ provider, snapshot, status, onClick }: OverviewCardProps
       )}
 
       <div className="qp-pcard-foot">
-        <span className="qp-status" style={{ color: access.color }}>
-          <span className="qp-status-dot" style={{ background: access.color }} />
+        <span className="qp-status" style={{ color: access.color }} title={access.label}>
+          <span
+            className={`qp-status-dot ${access.color === ACTIVE_COLOR ? 'is-hollow' : ''}`}
+            style={{ background: access.color === ACTIVE_COLOR ? 'transparent' : access.color, borderColor: access.color }}
+          />
           {access.label}
         </span>
         {sources.length > 0 && (

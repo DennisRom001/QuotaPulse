@@ -1,4 +1,4 @@
-import { GitCompareArrows, FolderKanban, Home, Monitor, Moon, RefreshCw, Settings2, Sun } from 'lucide-react';
+import { Compare, Projects, Home, Monitor, Moon, Refresh, Sliders, Sun } from '@/components/icons';
 import { Fragment, useMemo } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -62,7 +62,7 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
       {/* Row 1: brand + actions + window controls */}
       <div className="nav-header" data-tauri-drag-region>
         <div className="nav-header-left" data-tauri-drag-region>
-          <img src="/quotapulse-icon.png" alt="QuotaPulse" className="nav-logo" />
+          <img src="/quotapulse-mark.svg" alt="QuotaPulse" className="nav-logo" />
           <span className="nav-title" data-tauri-drag-region>QuotaPulse</span>
           {litellm && (
             <span
@@ -90,7 +90,7 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
             title={`${THEME_LABEL[theme]} (clic para cambiar)`}
             aria-label={THEME_LABEL[theme]}
           >
-            <ThemeIcon size={11} />
+            <ThemeIcon size={14} />
           </button>
           <button
             className="nav-action-btn"
@@ -98,7 +98,7 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
             disabled={refreshBusy}
             title="Actualizar todo (Ctrl+R)"
           >
-            <RefreshCw size={11} className={refreshBusy ? 'spin-icon' : ''} />
+            <Refresh size={14} className={refreshBusy ? 'spin-icon' : ''} />
           </button>
           <button
             className="nav-action-btn"
@@ -128,14 +128,14 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
             onClick={() => onNavigate('overview')}
             title="Inicio"
           >
-            <Home size={13} />
+            <Home size={15} />
           </button>
           <button
             className={`nav-pill ${activePage === 'projects' ? 'nav-pill-active' : ''}`}
             onClick={() => onNavigate('projects')}
             title="Proyectos"
           >
-            <FolderKanban size={13} />
+            <Projects size={15} />
           </button>
           {enabledProvidersFiltered.length >= 2 ? (
             <button
@@ -143,7 +143,7 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
               onClick={() => onNavigate('comparison')}
               title="Comparar fuentes"
             >
-              <GitCompareArrows size={13} />
+              <Compare size={15} />
             </button>
           ) : null}
         </div>
@@ -187,7 +187,7 @@ const NavBar = ({ activePage, onNavigate, onRefresh, refreshBusy, onWidget }: Na
             onClick={() => onNavigate('settings')}
             title="Ajustes (Ctrl+,)"
           >
-            <Settings2 size={13} />
+            <Sliders size={15} />
           </button>
         </div>
       </nav>

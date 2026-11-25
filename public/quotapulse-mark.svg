@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>QuotaPulse</title>
+  <!-- Ink tile with a chalk gauge: the track, the filled part of the quota and the pivot. -->
+  <rect width="512" height="512" rx="116" fill="#111111"/>
+  <path d="M136 336a120 120 0 0 1 240 0" fill="none" stroke="#F4F3EF" stroke-opacity="0.22" stroke-width="40" stroke-linecap="round"/>
+  <path d="M136 336a120 120 0 0 1 180.6-103.6" fill="none" stroke="#F4F3EF" stroke-width="40" stroke-linecap="round"/>
+  <circle cx="256" cy="336" r="26" fill="#F4F3EF"/>
+</svg>

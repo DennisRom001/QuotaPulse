@@ -5,18 +5,19 @@ import LimitEta, { forecastFor } from '@/components/meters/LimitEta';
 import { ModelBreakdownEntry, ProviderId, ProviderStatus, UsageAlert, UsageSnapshot } from '@/types';
 import { useUsageStore } from '@/stores/usageStore';
 import { useBurnRate, BurnReadout } from '@/hooks/useBurnRate';
-import { getProviderAccessState, providerAccessColor } from '@/utils/providerAccess';
+import { getProviderAccessState } from '@/utils/providerAccess';
 import { displayWindows } from '@/utils/usageWindows';
+import { formatWindowPercent } from '@/utils/percent';
 import '@/components/comparison/comparison.css';
 import { formatUsd } from '@/utils/format';
 
 const providers: ProviderId[] = ['claude', 'codex', 'antigravity', 'cursor'];
 
 const providerMeta: Record<ProviderId, { label: string; tint: 'claude' | 'codex' | 'antigravity' | 'cursor'; color: string }> = {
-  claude: { label: 'Claude', tint: 'claude', color: '#d97757' },
-  codex: { label: 'ChatGPT', tint: 'codex', color: '#10a37f' },
-  antigravity: { label: 'Gemini', tint: 'antigravity', color: '#4f6bed' },
-  cursor: { label: 'Cursor', tint: 'cursor', color: '#7c8cff' },
+  claude: { label: 'Claude', tint: 'claude', color: 'var(--qp-ink)' },
+  codex: { label: 'ChatGPT', tint: 'codex', color: 'var(--qp-ink)' },
+  antigravity: { label: 'Gemini', tint: 'antigravity', color: 'var(--qp-ink)' },
+  cursor: { label: 'Cursor', tint: 'cursor', color: 'var(--qp-ink)' },
 };
 
 const severityLabel: Record<UsageAlert['severity'], string> = {
@@ -26,9 +27,9 @@ const severityLabel: Record<UsageAlert['severity'], string> = {
 };
 
 const severityColor: Record<UsageAlert['severity'], string> = {
-  warning: '#f59e0b',
-  high: '#f97316',
-  critical: '#ef4444',
+  warning: 'var(--qp-warn)',
+  high: 'var(--qp-warn)',
+  critical: 'var(--qp-danger)',
 };
 
 const formatTokens = (value: number) => {
@@ -92,7 +93,8 @@ const ComparisonRow = ({ provider, snapshot, cost, tokens, alerts, status, trend
   return (
     <div className={`overview-card-v2 glass-${meta.tint} cmp-row`} onClick={onClick} title={access.detail}>
       <div className="overview-card-gauge-wrap">
-        <WidgetGauge provider={provider} primaryPct={pct} />
+        {/* No real figure → no ring at all (an empty ring reads as 0 %). */}
+        <WidgetGauge provider={provider} primaryPct={headline ? pct : undefined} estimate={headline?.accuracy === 'approximate'} />
       </div>
 
       <div className="overview-card-body">
@@ -101,7 +103,7 @@ const ComparisonRow = ({ provider, snapshot, cost, tokens, alerts, status, trend
           <span className="overview-card-title">{meta.label}</span>
           <span
             className="overview-card-status-badge"
-            style={{ color: providerAccessColor(access.health), borderColor: providerAccessColor(access.health) }}
+            style={{ color: access.color, borderColor: access.color }}
           >
             {access.label}
           </span>
@@ -128,8 +130,8 @@ const ComparisonRow = ({ provider, snapshot, cost, tokens, alerts, status, trend
           <div className="overview-card-window">
             <div className="overview-card-window-head">
               <span className="widget-provider-window-label">{fiveHour ? '5H' : 'AHORA'}</span>
-              <span className="overview-card-pct" style={{ color: arcColor(pct) }}>
-                {snapshot ? `${pct.toFixed(0)}%` : '—'}
+              <span className="overview-card-pct" style={{ color: headline && headline.accuracy !== 'approximate' ? arcColor(pct) : undefined }}>
+                {headline ? formatWindowPercent(headline) : '—'}
               </span>
             </div>
             <LimitEta

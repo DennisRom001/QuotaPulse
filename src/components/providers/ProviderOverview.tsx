@@ -1,4 +1,5 @@
 import OverviewCard from '@/components/providers/OverviewCard';
+import InkBlock from '@/components/providers/InkBlock';
 import {
   ModelBreakdownEntry,
   ProviderId,
@@ -28,6 +29,7 @@ const ProviderOverview = ({
   onNavigate,
 }: ProviderOverviewProps) => (
   <>
+  <InkBlock snapshots={snapshots} providers={providers} />
   <div className="qp-grid">
     {providers.map((id) => (
       <OverviewCard

@@ -2,49 +2,25 @@ type GlassToggleProps = {
   checked: boolean;
   onChange: (next: boolean) => void;
   label?: string;
+  // Kept for API compatibility; the switch is always ink (DESIGN.md: data and
+  // controls are never colour-coded).
   color?: string;
 };
 
-const GlassToggle = ({ checked, onChange, label = 'Toggle', color }: GlassToggleProps) => {
-  return (
-    <button
-      type="button"
-      className="glass-pill"
-      onClick={() => onChange(!checked)}
-      style={{
-        minWidth: 92,
-        justifyContent: 'space-between',
-        cursor: 'pointer',
-      }}
-      aria-pressed={checked}
-      aria-label={label}
-    >
-      <span style={{ fontSize: 5 }}>{label}</span>
-      <span
-        style={{
-          width: 24,
-          height: 14,
-          borderRadius: 99,
-          border: '1px solid var(--glass-border)',
-          background: checked ? color ?? 'var(--toggle-track-on)' : 'var(--toggle-track-off)',
-          position: 'relative',
-        }}
-      >
-        <span
-          style={{
-            position: 'absolute',
-            top: 1,
-            left: checked ? 11 : 1,
-            width: 10,
-            height: 10,
-            borderRadius: 99,
-            background: 'var(--toggle-knob)',
-            transition: 'left .2s ease',
-          }}
-        />
-      </span>
-    </button>
-  );
-};
+/** On/off switch: ink pill when on, rail when off. Styling in design-system.css. */
+const GlassToggle = ({ checked, onChange, label = 'Toggle' }: GlassToggleProps) => (
+  <button
+    type="button"
+    className="qp-switch"
+    onClick={() => onChange(!checked)}
+    aria-pressed={checked}
+    aria-label={label}
+  >
+    <span>{label}</span>
+    <span className="qp-switch-track" aria-hidden="true">
+      <span className="qp-switch-knob" />
+    </span>
+  </button>
+);
 
 export default GlassToggle;

@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Gauge, History, RefreshCw } from 'lucide-react';
+import { Gauge, History, Refresh } from '@/components/icons';
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import GlassPanel from '@/components/glass/GlassPanel';
 import WidgetActivityView from '@/components/layout/WidgetActivityView';
-import WidgetGauge, { arcColor } from '@/components/meters/WidgetGauge';
-import LimitEta, { forecastFor } from '@/components/meters/LimitEta';
+import InkBlock from '@/components/providers/InkBlock';
+import { ProviderMark } from '@/components/providers/ProviderLogo';
+import { barColor } from '@/components/providers/OverviewCard';
 import { useUsageStore } from '@/stores/usageStore';
 import { ModelBreakdownEntry, ProviderId, ProviderStatus, RecentActivityEntry, UsageSnapshot, WindowType } from '@/types';
-import { getProviderAccessState, providerAccessDotClass } from '@/utils/providerAccess';
+import { getProviderAccessState } from '@/utils/providerAccess';
 import { isTauriRuntime } from '@/utils/runtime';
 import { displayWindows } from '@/utils/usageWindows';
 import { formatWindowPercent } from '@/utils/percent';
@@ -64,7 +64,6 @@ const WidgetMode = ({
 }: WidgetModeProps) => {
   const [screen, setScreen] = useState<WidgetScreen>('usage');
   const [activityProvider, setActivityProvider] = useState<ProviderId>('codex');
-  const allForecasts = useUsageStore((s) => s.forecasts);
   const authStates = useUsageStore((s) => s.authStates);
 
   useEffect(() => {
@@ -86,7 +85,7 @@ const WidgetMode = ({
         <div className="nav-header" data-tauri-drag-region>
           {/* Left: logo + title + refresh */}
           <div className="nav-header-left" data-tauri-drag-region>
-            <img src="/quotapulse-icon.png" alt="QuotaPulse" className="nav-logo" />
+            <img src="/quotapulse-mark.svg" alt="QuotaPulse" className="nav-logo" />
             <span className="nav-title" data-tauri-drag-region>QuotaPulse</span>
             <button
               className="nav-action-btn"
@@ -94,7 +93,7 @@ const WidgetMode = ({
               disabled={refreshBusy}
               title="Actualizar todo (Ctrl+R)"
             >
-              <RefreshCw size={11} className={refreshBusy ? 'spin-icon' : ''} />
+              <Refresh size={14} className={refreshBusy ? 'spin-icon' : ''} />
             </button>
           </div>
 
@@ -105,14 +104,14 @@ const WidgetMode = ({
               onClick={() => setScreen('usage')}
               title="Anillos de uso"
             >
-              <Gauge size={12} />
+              <Gauge size={14} />
             </button>
             <button
               className={`nav-pill ${screen === 'activity' ? 'nav-pill-active' : ''}`}
               onClick={() => setScreen('activity')}
               title="Conversaciones recientes"
             >
-              <History size={12} />
+              <History size={14} />
             </button>
           </nav>
 
@@ -140,80 +139,37 @@ const WidgetMode = ({
       </div>
 
       {screen === 'usage' ? (
-        <div className="widget-usage-grid qp-scroll">
-          {providers.map((id) => {
-            const snapshot = snapshots[id];
-            const access = getProviderAccessState(statuses[id], snapshot, authStates[id]);
-            const [primary, secondary] = displayWindows(snapshot);
-            const forecasts = allForecasts[id];
-            const primaryPct = Math.max(0, Math.min(100, primary?.utilization ?? 0));
-            const secondaryPct = secondary ? Math.max(0, Math.min(100, secondary.utilization ?? 0)) : undefined;
-            const emptyStateLabel = snapshot ? 'Sin datos de cuota' : access.health === 'error' ? 'No disponible' : 'En espera';
-
-            return (
-              <GlassPanel
-                key={id}
-                className="widget-provider-card"
-                tint={meta[id].tint}
-                onClick={() => openActivity(id)}
-                title={access.detail}
-              >
-                <div className="widget-provider-header">
-                  <div className="widget-provider-title-row">
-                    <span className="widget-provider-title">{meta[id].name}</span>
-                    <span className={`nav-tab-dot ${providerAccessDotClass(access.health)}`} />
-                  </div>
-                </div>
-
-                <div className="widget-provider-gauge-wrap">
-                  <WidgetGauge provider={id} primaryPct={primaryPct} secondaryPct={secondaryPct} />
-                </div>
-
-                <div className="widget-provider-metrics">
-                  {snapshot && primary ? (
-                    <>
-                      <div className="widget-provider-complication">
-                        <div className="widget-provider-complication-head">
-                          <span className="widget-provider-window-label">
-                            {widgetWindowLabel(primary?.window_type)}
-                          </span>
-                          <span className="widget-provider-value" style={{ color: arcColor(primaryPct) }}>
-                            {formatWindowPercent(primary)}
-                          </span>
-                        </div>
-                        <LimitEta replacesReset resetsAt={primary?.resets_at} forecast={forecastFor(forecasts, primary)} className="widget-provider-reset" />
-                      </div>
-                      {secondaryPct != null && (
-                        <div className="widget-provider-complication">
-                          <div className="widget-provider-complication-head">
-                            <span className="widget-provider-window-label">
-                              {widgetWindowLabel(secondary?.window_type)}
-                            </span>
-                            <span className="widget-provider-value" style={{ color: arcColor(secondaryPct) }}>
-                              {formatWindowPercent(secondary)}
-                            </span>
-                          </div>
-                          <LimitEta replacesReset resetsAt={secondary?.resets_at} forecast={forecastFor(forecasts, secondary)} className="widget-provider-reset" />
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <span className="widget-provider-empty" title={access.detail}>
-                      {emptyStateLabel}
-                    </span>
-                  )}
-                  <div className="widget-provider-status-row">
-                    <span
-                      className="widget-provider-status-badge"
-                      style={{ color: access.color, borderColor: access.color }}
-                    >
-                      {access.label}
-                    </span>
-                  </div>
-                </div>
-              </GlassPanel>
-            );
-          })}
+        <div className="qp-widget-usage qp-scroll">
+          <InkBlock snapshots={snapshots} providers={providers} compact />
+          <ul className="qp-wrows" aria-label="Cuota por proveedor">
+            {providers.map((id) => {
+              const snapshot = snapshots[id];
+              const access = getProviderAccessState(statuses[id], snapshot, authStates[id]);
+              const [primary] = displayWindows(snapshot);
+              const pct = Math.max(0, Math.min(100, primary?.utilization ?? 0));
+              // No real figure → the status word, never an empty bar or 0 %.
+              const emptyLabel = snapshot ? access.label : access.health === 'error' ? 'No disponible' : 'En espera';
+              return (
+                <li key={id}>
+                  <button type="button" className="qp-wrow" onClick={() => openActivity(id)} title={access.detail}>
+                    <ProviderMark provider={id} size={16} />
+                    <span className="qp-wrow-name">{meta[id].name}</span>
+                    {primary ? (
+                      <>
+                        <span className="qp-wrow-bar" aria-hidden="true">
+                          <span style={{ width: `${pct}%`, background: barColor(primary) }} />
+                        </span>
+                        <span className="qp-wrow-win">{widgetWindowLabel(primary.window_type)}</span>
+                        <span className="qp-wrow-pct">{formatWindowPercent(primary)}</span>
+                      </>
+                    ) : (
+                      <span className="qp-wrow-empty" style={{ color: access.color }}>{emptyLabel}</span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       ) : (
         <WidgetActivityView

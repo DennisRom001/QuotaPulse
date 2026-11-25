@@ -88,10 +88,10 @@ const commandLabel = (prompt: string) => {
 };
 
 const providerColors: Record<ProviderId, string> = {
-  claude: '#d97757',
-  codex: '#10a37f',
-  antigravity: '#4f6bed',
-  cursor: '#7c8cff',
+  claude: 'var(--qp-ink)',
+  codex: 'var(--qp-ink)',
+  antigravity: 'var(--qp-ink)',
+  cursor: 'var(--qp-ink)',
 };
 
 const providerAccents: Record<ProviderId, string> = {

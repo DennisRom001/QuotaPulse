@@ -60,32 +60,36 @@
 
 body {
   font-family: var(--font-ui);
+  font-size: 11.5px;
+  line-height: 1.45;
 }
 
+/* Every number that can change uses tabular figures (Tabular Truth Rule). */
 .metric-value {
-  font-family: var(--font-mono);
-  font-size: 28px;
-  font-weight: 700;
+  font-family: var(--font-ui);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .metric-label {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .08em;
+  font-size: 10.5px;
+  font-weight: 500;
   color: var(--text-muted);
 }
 
 .countdown-text {
-  font-family: var(--font-mono);
-  font-size: 14px;
+  font-family: var(--font-ui);
+  font-size: 11px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .provider-name {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }

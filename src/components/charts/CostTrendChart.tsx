@@ -30,12 +30,6 @@ const CostTrendChart = ({ points, color, compact, days }: CostTrendChartProps) =
       ) : null}
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={points} margin={{ top: 4, right: 4, left: compact ? -20 : -16, bottom: 0 }}>
-          <defs>
-            <linearGradient id="costFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.5} />
-              <stop offset="100%" stopColor={color} stopOpacity={0.02} />
-            </linearGradient>
-          </defs>
           <XAxis
             dataKey="date"
             tick={{ fill: 'var(--text-muted)', fontSize: compact ? 8 : 10 }}
@@ -50,14 +44,24 @@ const CostTrendChart = ({ points, color, compact, days }: CostTrendChartProps) =
           />
           <Tooltip
             contentStyle={{
-              background: 'var(--tooltip-bg)',
-              border: '1px solid var(--tooltip-border)',
-              color: 'var(--text-primary)',
-              borderRadius: 10,
+              background: 'var(--qp-surface)',
+              border: '1px solid var(--qp-border)',
+              color: 'var(--qp-text)',
+              borderRadius: 9,
+              fontVariantNumeric: 'tabular-nums',
               fontSize: compact ? 10 : 12,
             }}
           />
-          <Area type="monotone" dataKey="cost_usd" name="Costo (USD)" stroke={color} fill="url(#costFill)" strokeWidth={compact ? 1.5 : 2} />
+          {/* Ink line over a flat rail-tinted area: no gradient (DESIGN.md). */}
+          <Area
+            type="monotone"
+            dataKey="cost_usd"
+            name="Costo (USD)"
+            stroke={color}
+            fill="var(--qp-rail)"
+            fillOpacity={0.9}
+            strokeWidth={compact ? 1.25 : 1.5}
+          />
         </AreaChart>
       </ResponsiveContainer>
     </div>

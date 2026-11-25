@@ -13,7 +13,7 @@ type UsageMeterProps = {
 const arcColor = (value: number) => {
   if (value >= 90) return 'var(--qp-danger)';
   if (value >= 70) return 'var(--qp-warn)';
-  return 'var(--qp-live)';
+  return 'var(--qp-ink)';
 };
 
 const UsageMeter = ({ utilization, label, detail, note, resetsAt, providerTint, size = 112 }: UsageMeterProps) => {

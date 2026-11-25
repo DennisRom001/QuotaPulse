@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Bell, Download, Gauge, MenuSquare, Monitor, Palette, Power, RefreshCw, Server, Wallet } from 'lucide-react';
+import { Bell, Download, Gauge, Tray, Monitor, Palette, Power, Refresh, Server, Wallet } from '@/components/icons';
 import { invoke } from '@tauri-apps/api/core';
 import GlassToggle from '@/components/glass/GlassToggle';
 import GlassInput from '@/components/glass/GlassInput';
@@ -44,7 +44,7 @@ const CursorEstimateSection = () => {
     <div className="stg-section">
       <div className="stg-section-head">
         <div className="stg-section-head-left">
-          <span className="stg-section-icon"><Gauge size={13} /></span>
+          <span className="stg-section-icon"><Gauge size={14} /></span>
           <span className="stg-section-title">Estimación de Cursor</span>
         </div>
         <span className="stg-badge">{budget ? 'Activa' : 'Desactivada'}</span>
@@ -189,10 +189,6 @@ const SettingsPage = () => {
 
   const theme = useSettingsStore((s) => s.theme);
   const setTheme = useSettingsStore((s) => s.setTheme);
-  const glassOpacity = useSettingsStore((s) => s.glassOpacity);
-  const setGlassOpacity = useSettingsStore((s) => s.setGlassOpacity);
-  const windowBackdrop = useSettingsStore((s) => s.windowBackdrop);
-  const setWindowBackdrop = useSettingsStore((s) => s.setWindowBackdrop);
   const widgetMode = useSettingsStore((s) => s.widgetMode);
   const enabledProviders = useSettingsStore((s) => s.enabledProviders);
   const setProviderEnabled = useSettingsStore((s) => s.setProviderEnabled);
@@ -229,7 +225,7 @@ const SettingsPage = () => {
   const surfaceCards = [
     { key: 'theme', label: 'Tema', value: formatThemeLabel(theme), badge: theme === 'system' ? 'SO' : 'Fijo', icon: Palette },
     { key: 'mode', label: 'Modo', value: widgetMode ? 'Widget' : 'Panel', badge: widgetMode ? 'Compacto' : 'Completo', icon: Monitor },
-    { key: 'refresh', label: 'Actualizar', value: formatCadenceLabel(refreshCadence), badge: refreshCadence === 'manual' ? 'Manual' : 'Auto', icon: RefreshCw },
+    { key: 'refresh', label: 'Actualizar', value: formatCadenceLabel(refreshCadence), badge: refreshCadence === 'manual' ? 'Manual' : 'Auto', icon: Refresh },
     { key: 'providers', label: 'Fuentes', value: `${enabledCount}/${providers.length}`, badge: `${activeCount} activas`, icon: Server },
   ] as const;
 
@@ -362,7 +358,7 @@ const SettingsPage = () => {
           <div className="stg-section">
             <div className="stg-section-head">
               <div className="stg-section-head-left">
-                <span className="stg-section-icon"><Palette size={13} /></span>
+                <span className="stg-section-icon"><Palette size={14} /></span>
                 <span className="stg-section-title">Apariencia</span>
               </div>
               <span className="stg-badge">{formatThemeLabel(theme)}</span>
@@ -390,39 +386,13 @@ const SettingsPage = () => {
                 );
               })}
             </div>
-            <div className="stg-startup-row">
-              <span className="stg-startup-text">Fondo de ventana (base detrás de tarjetas)</span>
-              <GlassToggle
-                checked={windowBackdrop !== false}
-                onChange={setWindowBackdrop}
-                label={windowBackdrop !== false ? 'Sí' : 'No'}
-              />
-            </div>
-            {/* Live preview: the CSS variable updates as the slider moves. */}
-            <div className="stg-startup-row" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
-              <span className="stg-startup-text">Nivel de transparencia / opacidad del cristal</span>
-              <div className="stg-glass-slider">
-                <span className="stg-startup-text" style={{ flex: 'none' }}>Translúcido</span>
-                <input
-                  type="range"
-                  min={35}
-                  max={95}
-                  step={1}
-                  value={Math.round((glassOpacity ?? 0.72) * 100)}
-                  onChange={(e) => setGlassOpacity(Number(e.target.value) / 100)}
-                  aria-label="Nivel de transparencia u opacidad del cristal"
-                />
-                <span className="stg-startup-text" style={{ flex: 'none' }}>Esmerilado</span>
-                <span className="stg-glass-value">{Math.round((glassOpacity ?? 0.72) * 100)}%</span>
-              </div>
-            </div>
           </div>
 
           {/* Refresh Cadence */}
           <div className="stg-section">
             <div className="stg-section-head">
               <div className="stg-section-head-left">
-                <span className="stg-section-icon"><RefreshCw size={13} /></span>
+                <span className="stg-section-icon"><Refresh size={14} /></span>
                 <span className="stg-section-title">Actualización</span>
               </div>
               <span className="stg-badge">{formatCadenceLabel(refreshCadence)}</span>
@@ -453,7 +423,7 @@ const SettingsPage = () => {
           <div className="stg-section">
             <div className="stg-section-head">
               <div className="stg-section-head-left">
-                <span className="stg-section-icon"><Power size={13} /></span>
+                <span className="stg-section-icon"><Power size={14} /></span>
                 <span className="stg-section-title">Inicio</span>
               </div>
               <span className="stg-badge">{launchAtStartup ? 'Automático' : 'Manual'}</span>
@@ -488,7 +458,7 @@ const SettingsPage = () => {
           <div className="stg-section">
             <div className="stg-section-head">
               <div className="stg-section-head-left">
-                <span className="stg-section-icon"><Server size={13} /></span>
+                <span className="stg-section-icon"><Server size={14} /></span>
                 <span className="stg-section-title">Proveedores</span>
               </div>
               <span className="stg-badge">{enabledCount} activos</span>
@@ -509,7 +479,7 @@ const SettingsPage = () => {
                     <div className="stg-provider-top">
                       <ProviderLogo provider={provider} size={16} />
                       <span className="stg-provider-name">{providerLabels[provider]}</span>
-                      <span className="stg-badge" style={{ color: status?.health === 'active' ? '#34d399' : status?.health === 'error' ? '#f87171' : '#fbbf24' }}>
+                      <span className="stg-badge" style={{ color: status?.health === 'active' ? 'var(--qp-live)' : status?.health === 'error' ? 'var(--qp-danger)' : 'var(--qp-warn)' }}>
                         {healthLabel(status?.health)}
                       </span>
                       <span className="stg-badge">{providerAlertCount} alertas</span>
@@ -537,7 +507,7 @@ const SettingsPage = () => {
           <div className="stg-section">
             <div className="stg-section-head">
               <div className="stg-section-head-left">
-                <span className="stg-section-icon"><MenuSquare size={13} /></span>
+                <span className="stg-section-icon"><Tray size={14} /></span>
                 <span className="stg-section-title">Bandeja del sistema</span>
               </div>
               <span className="stg-badge">Icono</span>
@@ -564,7 +534,7 @@ const SettingsPage = () => {
           <div className="stg-section">
             <div className="stg-section-head">
               <div className="stg-section-head-left">
-                <span className="stg-section-icon"><Bell size={13} /></span>
+                <span className="stg-section-icon"><Bell size={14} /></span>
                 <span className="stg-section-title">Notificaciones</span>
               </div>
               <span className="stg-badge">{notificationsEnabled ? 'Activadas' : 'Desactivadas'}</span>
@@ -631,7 +601,7 @@ const SettingsPage = () => {
           <div className="stg-section">
             <div className="stg-section-head">
               <div className="stg-section-head-left">
-                <span className="stg-section-icon"><Wallet size={13} /></span>
+                <span className="stg-section-icon"><Wallet size={14} /></span>
                 <span className="stg-section-title">Presupuestos</span>
               </div>
               <span className="stg-badge">límite de gasto</span>
@@ -691,7 +661,7 @@ const SettingsPage = () => {
           <div className="stg-section">
             <div className="stg-section-head">
               <div className="stg-section-head-left">
-                <span className="stg-section-icon"><RefreshCw size={13} /></span>
+                <span className="stg-section-icon"><Refresh size={14} /></span>
                 <span className="stg-section-title">Frecuencia por proveedor</span>
               </div>
               <span className="stg-badge">por fuente</span>
@@ -735,7 +705,7 @@ const SettingsPage = () => {
           <div className="stg-section">
             <div className="stg-section-head">
               <div className="stg-section-head-left">
-                <span className="stg-section-icon"><Download size={13} /></span>
+                <span className="stg-section-icon"><Download size={14} /></span>
                 <span className="stg-section-title">Exportar</span>
               </div>
               <span className="stg-badge">CSV · JSON · PDF</span>
