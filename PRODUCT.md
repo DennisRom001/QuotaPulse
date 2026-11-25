@@ -47,7 +47,7 @@ QuotaPulse shows, in one small always-available window and in the Windows tray, 
 
 ## Evidence on Hand
 
-- Public repository and signed releases: https://github.com/DennisRom001/QuotaPulse (v1.0.0 → v1.3.0).
+- Public repository and signed releases: https://github.com/DennisRom001/QuotaPulse (v1.0.0 → v1.4.0).
 - README (Spanish) describing features and data sources; app icon and provider logos in `public/`.
 - No testimonials, user counts, download numbers, press or benchmarks exist; future work must not fabricate any.
 
