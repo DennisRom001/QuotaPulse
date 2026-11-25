@@ -735,6 +735,12 @@ pub(crate) fn antigravity_log_roots() -> Vec<PathBuf> {
         roots.push(data_dir.join("Antigravity").join("logs"));
         roots.push(data_dir.join("Antigravity IDE").join("logs"));
     }
+    // Electron / VS Code–style apps on Linux keep their data in ~/.config.
+    #[cfg(target_os = "linux")]
+    if let Some(config_dir) = dirs::config_dir() {
+        roots.push(config_dir.join("Antigravity").join("logs"));
+        roots.push(config_dir.join("Antigravity IDE").join("logs"));
+    }
     if let Some(home) = dirs::home_dir() {
         roots.push(home.join(".antigravity").join("logs"));
         roots.push(home.join(".gemini").join("antigravity-cli").join("logs"));

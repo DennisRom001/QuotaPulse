@@ -70,7 +70,9 @@ fn render_tray_title(app: &AppHandle, snapshots: &[UsageSnapshot]) {
     let title = tray::strip_title(mode, today_cost_usd(&state));
     // With the floating capsule on, the tray is the single app icon: the
     // capsule already shows every provider, so no per-provider badges.
-    let badges = if crate::capsule::is_enabled(app) {
+    // On Linux, AppIndicator squeezes a wide badge strip into one square
+    // icon (and sends no click events), so the tray keeps the app icon there.
+    let badges = if crate::capsule::is_enabled(app) || cfg!(target_os = "linux") {
         Vec::new()
     } else {
         tray::build_badges(mode, snapshots)

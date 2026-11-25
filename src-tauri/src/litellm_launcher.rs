@@ -132,6 +132,13 @@ pub fn ensure_running(app: &AppHandle) {
         info!("[litellm] auto-start disabled by QP_DISABLE_LITELLM");
         return;
     }
+    // start-litellm.bat is a Windows script. On macOS / Linux QuotaPulse still
+    // reads a proxy the user runs on 127.0.0.1:4000; it just does not start it
+    // (and does not create a master key for it).
+    if !cfg!(target_os = "windows") {
+        info!("[litellm] auto-start is Windows-only; start `litellm` yourself to use the proxy");
+        return;
+    }
     let app = app.clone();
     std::thread::spawn(move || {
         if port_open() {

@@ -325,7 +325,8 @@ pub fn calibrate_estimate(actual_percent: f64, cycle_start_day: u8) -> Result<u3
 }
 
 fn cursor_running() -> bool {
-    crate::providers::process::is_running("Cursor.exe")
+    // Cursor.exe (Windows), Cursor.app/Contents/MacOS/Cursor (macOS), cursor (Linux).
+    crate::providers::process::is_running("Cursor")
 }
 
 #[async_trait]

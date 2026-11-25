@@ -103,29 +103,34 @@ fn point_on_any(monitors: &[(i32, i32, u32, u32)], point: (i32, i32)) -> bool {
     })
 }
 
-/// Saved position if it is still on a connected monitor, else top-centre of
-/// the primary monitor (monitors can be unplugged between sessions).
+/// A monitor's work area — the screen minus the Windows taskbar, the macOS
+/// menu bar (and the notch inside it) or a Linux desktop's top panel — as
+/// `(x, y, width, height)` in physical px.
+fn work_area(monitor: &tauri::Monitor) -> (i32, i32, u32, u32) {
+    let area = monitor.work_area();
+    (area.position.x, area.position.y, area.size.width, area.size.height)
+}
+
+/// Saved position if it is still inside a connected monitor's work area,
+/// else top-centre of the primary monitor's work area (monitors can be
+/// unplugged, and panels move, between sessions).
 fn initial_position(window: &tauri::WebviewWindow, config: CapsuleConfig) -> Option<(i32, i32)> {
-    let monitors: Vec<(i32, i32, u32, u32)> = window
+    let areas: Vec<(i32, i32, u32, u32)> = window
         .available_monitors()
         .unwrap_or_default()
         .iter()
-        .map(|m| (m.position().x, m.position().y, m.size().width, m.size().height))
+        .map(work_area)
         .collect();
     if let (Some(x), Some(y)) = (config.x, config.y) {
         // Probe a point just inside the capsule, not its exact corner.
-        if point_on_any(&monitors, (x + 12, y + 12)) {
+        if point_on_any(&areas, (x + 12, y + 12)) {
             return Some((x, y));
         }
     }
     let monitor = window.primary_monitor().ok().flatten()?;
     let width = window.outer_size().map(|s| s.width).unwrap_or(0);
-    Some(centered_top(
-        (monitor.position().x, monitor.position().y),
-        (monitor.size().width, monitor.size().height),
-        width,
-        monitor.scale_factor(),
-    ))
+    let (x, y, w, h) = work_area(&monitor);
+    Some(centered_top((x, y), (w, h), width, monitor.scale_factor()))
 }
 
 /// Remember the position, writing it once the drag has settled.
@@ -169,9 +174,10 @@ fn create_window(app: &AppHandle) -> tauri::Result<()> {
         .maximizable(false)
         .minimizable(false)
         .focused(false)
-        .visible(false);
-    #[cfg(not(target_os = "macos"))]
-    let builder = builder.transparent(true);
+        .visible(false)
+        // macOS needs the `macos-private-api` feature + `app.macOSPrivateApi`
+        // (both enabled) for a transparent window; Linux needs a compositor.
+        .transparent(true);
     let window = builder.build()?;
 
     let config = current(app).unwrap_or_default();
@@ -299,6 +305,25 @@ mod tests {
         assert_eq!(centered_top((0, 0), (1920, 1080), 300, 1.25), (810, 10));
         // Secondary monitor to the left.
         assert_eq!(centered_top((-2560, 0), (2560, 1440), 200, 1.0), (-1380, 8));
+    }
+
+    #[test]
+    fn default_position_respects_top_bars() {
+        // macOS: a 1512×982 pt display at 2× whose menu bar (with the notch)
+        // takes the top 37 pt → the work area starts at y = 74 px.
+        assert_eq!(centered_top((0, 74), (3024, 1890), 360, 2.0), (1332, 90));
+        // GNOME: a 32 px top panel on a 1920×1080 monitor.
+        assert_eq!(centered_top((0, 32), (1920, 1048), 300, 1.0), (810, 40));
+        // Windows: taskbar at the bottom, work area starts at the top.
+        assert_eq!(centered_top((0, 0), (1920, 1040), 300, 1.0), (810, 8));
+    }
+
+    #[test]
+    fn saved_position_under_a_top_panel_is_not_inside_the_work_area() {
+        // Linux/macOS work area that starts below a 32 px panel.
+        let areas = [(0, 32, 1920, 1048)];
+        assert!(!point_on_any(&areas, (900, 10)), "inside the panel");
+        assert!(point_on_any(&areas, (900, 40)));
     }
 
     #[test]

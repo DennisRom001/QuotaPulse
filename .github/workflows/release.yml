@@ -1,10 +1,20 @@
 # Builds, signs and publishes a QuotaPulse release when a version tag is pushed.
 #
-#   git tag v1.0.1 && git push origin v1.0.1
+#   git tag v1.5.0 && git push origin v1.5.0
 #
-# The tag must match "version" in src-tauri/tauri.conf.json. The job builds the
-# Windows installers (NSIS + MSI), signs the update bundles with the updater
-# key, generates latest.json and publishes everything as a GitHub Release.
+# The tag must match "version" in src-tauri/tauri.conf.json (and package.json /
+# Cargo.toml). Three jobs, all free on public repositories:
+#
+#   1. create-release  — a *draft* release for the tag (invisible to the
+#                        updater while assets are still uploading);
+#   2. build           — Windows (.exe NSIS + .msi), macOS (universal .app +
+#                        .dmg, ad-hoc signed, not notarized) and Linux
+#                        (.AppImage + .deb). Each job signs its update bundle
+#                        with the updater key and merges its platform into the
+#                        release's latest.json;
+#   3. publish         — marks the release public and "latest" only once every
+#                        platform has uploaded, so latest.json is never partial.
+#
 # Installed copies of QuotaPulse then find the update at
 # https://github.com/DennisRom001/QuotaPulse/releases/latest/download/latest.json
 #
@@ -12,7 +22,8 @@
 #   TAURI_SIGNING_PRIVATE_KEY           contents of the updater private key
 #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  its password (must not be empty)
 #
-# GitHub Actions is free for public repositories.
+# No Apple certificate is needed: without APPLE_* secrets the macOS build is
+# ad-hoc signed ("signingIdentity": "-") and not notarized.
 name: Release
 
 on:
@@ -23,8 +34,10 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: windows-latest
+  create-release:
+    runs-on: ubuntu-22.04
+    outputs:
+      release_id: ${{ steps.draft.outputs.release_id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,6 +71,47 @@ jobs:
             exit 1
           }
 
+      - name: Create draft release
+        id: draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
+            --title "QuotaPulse $TAG" \
+            --notes "Installers for QuotaPulse $TAG on Windows, macOS and Linux. Existing installations update themselves (Settings → About → check for updates)."
+          id=$(gh api "repos/$GITHUB_REPOSITORY/releases" --jq ".[] | select(.tag_name == \"$TAG\") | .id" | head -n1)
+          test -n "$id"
+          echo "release_id=$id" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: create-release
+    name: build (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+            args: --config src-tauri/tauri.release.conf.json
+          - name: macos
+            os: macos-latest
+            args: --config src-tauri/tauri.release.conf.json --target universal-apple-darwin --bundles app,dmg
+          - name: linux
+            os: ubuntu-22.04
+            args: --config src-tauri/tauri.release.conf.json --bundles appimage,deb
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Linux system libraries for Tauri
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev \
+            librsvg2-dev patchelf libdbus-1-dev libssl-dev build-essential
+
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -66,6 +120,9 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          # macOS ships one universal binary (Apple silicon + Intel).
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
@@ -75,7 +132,7 @@ jobs:
       - name: Install JS dependencies (includes the Tauri CLI)
         run: npm ci
 
-      - name: Build, sign and publish the release
+      - name: Build, sign and upload to the draft release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -84,14 +141,19 @@ jobs:
           # environment variable, and a password-less key then fails to decode.
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: QuotaPulse ${{ github.ref_name }}
-          releaseBody: |
-            Windows installers for QuotaPulse ${{ github.ref_name }}.
-            Existing installations update themselves (Settings → Startup → update checks).
-          releaseDraft: false
-          prerelease: false
+          releaseId: ${{ needs.create-release.outputs.release_id }}
           includeUpdaterJson: true
-          # Turns on updater artifacts (signed bundles + latest.json) for
-          # release builds only; local builds don't need the private key.
-          args: --config src-tauri/tauri.release.conf.json
+          # tauri.release.conf.json turns on updater artifacts (signed bundles
+          # + latest.json) for release builds only.
+          args: ${{ matrix.args }}
+
+  publish:
+    needs: [create-release, build]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/${{ needs.create-release.outputs.release_id }}" \
+            -F draft=false -F prerelease=false -f make_latest=true

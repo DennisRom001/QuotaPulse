@@ -54,6 +54,11 @@ pub fn discover_port() -> Option<u16> {
         data_roots.push(data_dir.join("Antigravity"));
         data_roots.push(data_dir.join("Antigravity IDE"));
     }
+    #[cfg(target_os = "linux")]
+    if let Some(config_dir) = dirs::config_dir() {
+        data_roots.push(config_dir.join("Antigravity"));
+        data_roots.push(config_dir.join("Antigravity IDE"));
+    }
     if let Some(home) = dirs::home_dir() {
         data_roots.push(home.join(".antigravity"));
         #[cfg(target_os = "macos")]

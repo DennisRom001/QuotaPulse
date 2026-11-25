@@ -2,10 +2,16 @@
 
 ## Requisitos
 
-- Node.js 20+ y npm
-- Rust estable (`rustup`) con el target MSVC
-- Visual Studio Build Tools con la carga de trabajo **Desarrollo para el escritorio con C++**
-- Windows 10/11
+- **Todos:** Node.js 20+ y npm, y Rust estable (`rustup`).
+- **Windows 10/11:** el target MSVC y Visual Studio Build Tools con la carga de trabajo
+  **Desarrollo para el escritorio con C++**.
+- **macOS:** Xcode Command Line Tools (`xcode-select --install`). Para una app universal,
+  `rustup target add aarch64-apple-darwin x86_64-apple-darwin`.
+- **Linux (Debian/Ubuntu 22.04+):**
+
+```bash
+sudo apt install libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libdbus-1-dev libssl-dev build-essential
+```
 
 ## Desarrollo
 
@@ -29,13 +35,19 @@ npm run dev
 npm run tauri build
 ```
 
-Genera en `src-tauri/target/release/`:
+Genera en `src-tauri/target/release/` (o `target/<triple>/release/` con `--target`):
 
-- `QuotaPulse.exe`
-- `bundle/nsis/QuotaPulse_<versión>_x64-setup.exe`
-- `bundle/msi/QuotaPulse_<versión>_x64_en-US.msi`
+| Sistema | Paquetes en `bundle/` | Comando |
+|---|---|---|
+| Windows | `nsis/QuotaPulse_<versión>_x64-setup.exe`, `msi/QuotaPulse_<versión>_x64_en-US.msi` | `npm run tauri build` |
+| macOS | `macos/QuotaPulse.app`, `dmg/QuotaPulse_<versión>_universal.dmg` | `npm run tauri build -- --target universal-apple-darwin --bundles app,dmg` |
+| Linux | `appimage/QuotaPulse_<versión>_amd64.AppImage`, `deb/QuotaPulse_<versión>_amd64.deb` | `npm run tauri build -- --bundles appimage,deb` |
 
-`npm run tauri` pasa por `scripts/tauri.mjs`, que llama a la CLI de Tauri y, tras un
+En macOS la app se firma ad hoc (`"signingIdentity": "-"`) y no se notariza: no hace falta
+una cuenta de desarrollador de Apple. Para notarizar habría que añadir los secrets `APPLE_*`
+que documenta Tauri.
+
+`npm run tauri` pasa por `scripts/tauri.mjs`, que llama a la CLI de Tauri y, en Windows, tras un
 `build` correcto, firma también el `QuotaPulse.exe` suelto (Tauri solo firma la copia que
 mete en los instaladores).
 
@@ -91,8 +103,11 @@ git tag v1.0.1
 git push origin v1.0.1
 ```
 
-`.github/workflows/release.yml` compila en Windows, firma los paquetes de
-actualización, genera `latest.json` y publica la Release. Las copias instaladas la
+`.github/workflows/release.yml` crea un borrador de Release, compila en paralelo en
+Windows (`.exe` + `.msi`), macOS (`.app` + `.dmg` universales) y Linux (`.AppImage` +
+`.deb`), firma los paquetes de actualización de cada plataforma y los une en un solo
+`latest.json`; al terminar los tres, publica la Release. Así el actualizador nunca ve
+un `latest.json` a medias. Las copias instaladas la
 detectan al arrancar (si "update checks" está activo en Ajustes) o desde
 *About → Check for updates*. GitHub Actions es gratuito en repositorios públicos.
 
@@ -105,11 +120,18 @@ el workflow los activa con `--config src-tauri/tauri.release.conf.json`.
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
+La lógica que depende del sistema (rutas de las CLI, nombres de proceso, comandos de
+terminal para el login, posición de la cápsula) está en funciones puras de
+`src-tauri/src/platform.rs` y `capsule.rs` que reciben el sistema como parámetro, así
+que estos tests comprueban Windows, macOS y Linux desde cualquier equipo. El workflow
+`ci.yml` ejecuta además `cargo test` y `cargo clippy` en `windows-latest`, `macos-latest`
+y `ubuntu-22.04` en cada push y PR, para compilar de verdad el código de cada plataforma.
+
 ## Rutas útiles
 
-| Qué | Dónde |
-|---|---|
-| Datos de la app (SQLite, ajustes) | `%APPDATA%\com.quotapulse.desktop` |
-| Logs | `%APPDATA%\QuotaPulse\logs` |
-| Log de LiteLLM | `%LOCALAPPDATA%\QuotaPulse\litellm.log` |
-| Entorno de LiteLLM | `.venv` junto a `start-litellm.bat` |
+| Qué | Windows | macOS | Linux |
+|---|---|---|---|
+| Datos de la app (SQLite, logs) | `%APPDATA%\com.quotapulse.desktop` | `~/Library/Application Support/com.quotapulse.desktop` | `~/.local/share/com.quotapulse.desktop` |
+| Ajustes de la cápsula (`capsule.json`) | `%APPDATA%\com.quotapulse.desktop` | `~/Library/Application Support/com.quotapulse.desktop` | `~/.config/com.quotapulse.desktop` |
+| Log de LiteLLM | `%LOCALAPPDATA%\QuotaPulse\litellm.log` | — | — |
+| Entorno de LiteLLM | `.venv` junto a `start-litellm.bat` | — | — |

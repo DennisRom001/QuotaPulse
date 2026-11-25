@@ -1,6 +1,7 @@
-# Continuous integration for QuotaPulse (Windows-only desktop app).
-# Builds the frontend and runs the Rust test suite. Installers are built
-# and signed locally with `npm run tauri build` (see BUILDING.md).
+# Continuous integration for QuotaPulse on Windows, macOS and Linux.
+# Builds the frontend, then runs the Rust tests and clippy on each OS, so
+# platform-specific code (#[cfg(target_os = …)]) is compiled and tested for
+# real on all three. Installers are built by release.yml.
 name: CI
 
 on:
@@ -10,7 +11,12 @@ on:
 
 jobs:
   test:
-    runs-on: windows-latest
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,6 +33,13 @@ jobs:
             exit 1
           }
 
+      - name: Linux system libraries for Tauri
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev \
+            librsvg2-dev patchelf libdbus-1-dev libssl-dev build-essential
+
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -41,6 +54,8 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
@@ -48,4 +63,7 @@ jobs:
           workspaces: src-tauri
 
       - name: Rust tests
-        run: cargo test --manifest-path src-tauri/Cargo.toml
+        run: cargo test --manifest-path src-tauri/Cargo.toml --locked
+
+      - name: Clippy
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --locked --all-targets

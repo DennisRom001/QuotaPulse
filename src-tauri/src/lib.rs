@@ -40,6 +40,7 @@ mod exporter;
 mod limit_forecast;
 mod litellm_launcher;
 mod notifications;
+mod platform;
 mod post_refresh;
 mod pricing;
 mod providers;
@@ -498,6 +499,7 @@ pub fn run() {
             commands::set_tray_title_mode,
             commands::set_cursor_estimate,
             claude_login::trigger_claude_login,
+            claude_login::trigger_codex_login,
             capsule::get_capsule_enabled,
             capsule::set_capsule_enabled,
             capsule::capsule_toggle_main,

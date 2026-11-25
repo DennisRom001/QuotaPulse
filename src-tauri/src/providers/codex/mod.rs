@@ -159,15 +159,9 @@ fn codex_installed() -> bool {
     if codex_home_roots().iter().any(|r| r.is_dir()) {
         return true;
     }
-    #[cfg(target_os = "windows")]
-    let names: &[&str] = &["codex.exe", "codex.cmd"];
-    #[cfg(not(target_os = "windows"))]
-    let names: &[&str] = &["codex"];
-    std::env::var_os("PATH")
-        .map(|p| {
-            std::env::split_paths(&p).any(|dir| names.iter().any(|n| dir.join(n).is_file()))
-        })
-        .unwrap_or(false)
+    // PATH plus the usual npm / Homebrew / ~/.local/bin folders: desktop apps
+    // on macOS and Linux start with a minimal PATH.
+    crate::platform::find_cli("codex").is_some()
 }
 
 impl CodexProvider {
