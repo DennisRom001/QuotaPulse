@@ -232,6 +232,9 @@ The window itself is a 10 px sheet (the Windows 11 corner). Cards and panels 14 
 ### Ink Block (signature)
 Solid ink sheet, 14 px radius, 14 px padding. Caption (label, Ink Block Muted), provider monogram + name, the Figure (e.g. `86 %`), the window name and reset time in tabular figures, and a 4 px chalk bar on a translucent rail. With no live figure: the caption plus one sentence (e.g. "Ninguna cuota en vivo ahora · 2 proveedores con datos locales").
 
+### Floating Capsule
+A separate borderless, always-on-top window near the top of the screen (top-centre by default, draggable, position remembered). It is an ink pill in both themes, 34 px tall, sized to its content: one 16 px chalk monogram per provider that has a snapshot (plus LiteLLM while its proxy is up), each with a 6 px status dot at its corner (Live Green, Warn Ochre, Danger Red in their light-on-ink variants; ACTIVE hollow). A 2 px bar sits under a monogram only when that provider has a real figure (ink, ochre or red by threshold; Estimate Grey for estimates). A chevron reveals tabular percentages inline. Clicking shows or hides the main window. While it is on, the main window has no taskbar button and the tray is the single app icon.
+
 ### Provider Card
 White sheet, hairline, 14 px radius, 14 px padding. Row 1: monogram (20 px), name (Title), percent right-aligned (Percent). Row 2: plan label and window name (Body, Ink Secondary). Row 3: 4 px bar. Row 4: status dot + status label on the left, reset countdown right (tabular). No real figure: rows 1, 2 and 4 stay; row 3 becomes a one-line note; no percent is shown.
 

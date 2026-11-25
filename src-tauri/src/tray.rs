@@ -337,10 +337,14 @@ fn toggle_main_window(app: &AppHandle) {
     let Some(window) = app.get_webview_window("main") else {
         return;
     };
-    if window.is_visible().unwrap_or(false) {
+    // A minimised window is still "visible"; with the floating capsule on it
+    // has no taskbar button, so treat it as hidden and bring it back.
+    let on_screen = window.is_visible().unwrap_or(false) && !window.is_minimized().unwrap_or(false);
+    if on_screen {
         let _ = window.hide();
     } else {
         let _ = window.show();
+        let _ = window.unminimize();
         let _ = window.set_focus();
     }
 }

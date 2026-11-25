@@ -9,8 +9,34 @@ import AboutPanel from '@/components/settings/AboutPanel';
 import { Budget, BudgetForecast, ExportFormat, PerProviderThresholds, ProviderId, ProviderStatus, RefreshCadence, TrayTitleMode } from '@/types';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useUsageStore } from '@/stores/usageStore';
+import { isTauriRuntime } from '@/utils/runtime';
 
 const providers: ProviderId[] = ['claude', 'codex', 'antigravity', 'cursor'];
+
+/**
+ * Floating capsule on / off. The backend owns the state (capsule.json), so the
+ * capsule window and the taskbar button follow it from the next launch too.
+ */
+const CapsuleSetting = () => {
+  const [enabled, setEnabled] = useState<boolean>();
+  useEffect(() => {
+    if (!isTauriRuntime()) return;
+    invoke<boolean>('get_capsule_enabled').then(setEnabled).catch(() => undefined);
+  }, []);
+  if (enabled === undefined) return null;
+  const toggle = (next: boolean) => {
+    setEnabled(next);
+    invoke('set_capsule_enabled', { enabled: next }).catch(() => setEnabled(!next));
+  };
+  return (
+    <div className="stg-startup-row">
+      <span className="stg-startup-text">
+        Cápsula flotante arriba de la pantalla (sustituye el botón de la barra de tareas y las insignias de la bandeja)
+      </span>
+      <GlassToggle checked={enabled} onChange={toggle} label={enabled ? 'Sí' : 'No'} />
+    </div>
+  );
+};
 
 /**
  * Estimated Cursor usage. Cursor keeps its quota server-side, so QuotaPulse
@@ -386,6 +412,7 @@ const SettingsPage = () => {
                 );
               })}
             </div>
+            <CapsuleSetting />
           </div>
 
           {/* Refresh Cadence */}

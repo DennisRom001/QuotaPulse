@@ -68,7 +68,14 @@ fn render_tray_title(app: &AppHandle, snapshots: &[UsageSnapshot]) {
     };
     let mode = state.tray_title_mode.lock().map(|g| *g).unwrap_or_default();
     let title = tray::strip_title(mode, today_cost_usd(&state));
-    tray::sync_provider_badges(app, &tray::build_badges(mode, snapshots), title);
+    // With the floating capsule on, the tray is the single app icon: the
+    // capsule already shows every provider, so no per-provider badges.
+    let badges = if crate::capsule::is_enabled(app) {
+        Vec::new()
+    } else {
+        tray::build_badges(mode, snapshots)
+    };
+    tray::sync_provider_badges(app, &badges, title);
 }
 
 /// Today's estimated spend across providers. Cost rows are keyed by UTC

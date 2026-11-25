@@ -3,6 +3,9 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import ErrorBoundary from "@/components/states/ErrorBoundary";
+import Capsule from "@/components/capsule/Capsule";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { isTauriRuntime } from "@/utils/runtime";
 
 // Last-resort fatal renderer. Used when React itself cannot be created (the
 // ErrorBoundary inside the tree cannot catch that). Builds the DOM with
@@ -37,6 +40,18 @@ function renderFatal(container: HTMLElement, error: unknown): void {
 
 const container = document.getElementById("root");
 
+// The floating capsule is a second window loading this same bundle; it is told
+// apart by its window label. `?capsule` previews it in a browser during dev.
+const isCapsuleWindow = (): boolean => {
+  if (import.meta.env.DEV && new URLSearchParams(window.location.search).has("capsule")) return true;
+  if (!isTauriRuntime()) return false;
+  try {
+    return getCurrentWindow().label === "capsule";
+  } catch {
+    return false;
+  }
+};
+
 if (!container) {
   document.body.textContent = "QuotaPulse: #root element missing.";
 } else {
@@ -44,7 +59,7 @@ if (!container) {
     ReactDOM.createRoot(container).render(
       <React.StrictMode>
         <ErrorBoundary>
-          <App />
+          {isCapsuleWindow() ? <Capsule /> : <App />}
         </ErrorBoundary>
       </React.StrictMode>,
     );

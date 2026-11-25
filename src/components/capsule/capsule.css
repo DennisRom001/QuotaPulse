@@ -1,0 +1,136 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Floating capsule ("isla"), DESIGN.md → Floating Capsule.
+   An ink strip in both themes (like the ink block): chalk monograms, status
+   dots in the light status variants, a 2px bar under a monogram only when
+   that provider has a real figure.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* The capsule window is transparent: no paper sheet, no window border. */
+html.qp-capsule-window,
+html.qp-capsule-window body,
+html.qp-capsule-window #root {
+  width: auto;
+  height: auto;
+  margin: 0;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden;
+}
+
+.qp-capsule {
+  /* Status colours readable on ink (the light-on-dark variants). */
+  --qp-live: #5cc28a;
+  --qp-warn: #e0a040;
+  --qp-danger: #f07164;
+  --qp-active: #edebe6;
+  --qp-ink: #f4f3ef;
+  --qp-estimate: #8a877f;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  height: 34px;
+  padding: 0 12px 0 14px;
+  border-radius: 999px;
+  background: #111111;
+  border: 1px solid rgb(244 243 239 / 0.12);
+  color: #f4f3ef;
+  font-family: var(--font-ui);
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.qp-capsule:focus-visible {
+  outline: 2px solid #f4f3ef;
+  outline-offset: -3px;
+}
+
+.qp-capsule-item {
+  display: grid;
+  grid-template-columns: 16px auto;
+  grid-template-areas:
+    'mark pct'
+    'bar  pct';
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 3px;
+}
+
+.qp-capsule-mark {
+  grid-area: mark;
+  position: relative;
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.qp-capsule-dot {
+  position: absolute;
+  right: -3px;
+  top: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 1.5px #111111;
+}
+
+.qp-capsule-bar {
+  grid-area: bar;
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgb(244 243 239 / 0.18);
+  overflow: hidden;
+}
+
+.qp-capsule-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.qp-capsule-pct {
+  grid-area: pct;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #f4f3ef;
+}
+
+.qp-capsule-empty {
+  font-size: 11px;
+  font-weight: 500;
+  color: #a9a69e;
+}
+
+.qp-capsule-toggle {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-left: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #a9a69e;
+  cursor: pointer;
+}
+
+.qp-capsule-toggle:hover {
+  background: rgb(244 243 239 / 0.12);
+  color: #f4f3ef;
+}
+
+.qp-capsule-toggle:focus-visible {
+  outline: 2px solid #f4f3ef;
+  outline-offset: 1px;
+}

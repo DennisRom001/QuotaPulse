@@ -25,7 +25,7 @@
         "maximizable": false,
         "minWidth": 360,
         "minHeight": 420,
-        "visible": true
+        "visible": false
       }
     ],
     "security": {

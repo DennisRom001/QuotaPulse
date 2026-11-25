@@ -1,0 +1,12 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "capsule",
+  "description": "Floating capsule: read events and drag itself; no other window access",
+  "windows": [
+    "capsule"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging"
+  ]
+}

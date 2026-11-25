@@ -33,6 +33,7 @@ mod alert_engine;
 mod alerts;
 mod autostart;
 mod budgets;
+mod capsule;
 mod claude_login;
 mod commands;
 mod exporter;
@@ -428,6 +429,10 @@ pub fn run() {
             }
 
             tray::setup_tray(app)?;
+            // Floating capsule (on by default): when it is up, the main window
+            // starts hidden and has no taskbar button; a click on the capsule
+            // or the tray icon shows it.
+            let capsule_on = capsule::setup(app);
             litellm_launcher::ensure_running(app.handle());
             start_file_watchers(app.handle());
 
@@ -451,7 +456,7 @@ pub fn run() {
 
             // For non-autostart launches, show and focus the main window right
             // away (no artificial delay).
-            if !launched_from_autostart {
+            if !launched_from_autostart && !capsule_on {
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.show();
                     let _ = window.unminimize();
@@ -493,6 +498,10 @@ pub fn run() {
             commands::set_tray_title_mode,
             commands::set_cursor_estimate,
             claude_login::trigger_claude_login,
+            capsule::get_capsule_enabled,
+            capsule::set_capsule_enabled,
+            capsule::capsule_toggle_main,
+            capsule::capsule_resize,
             commands::calibrate_cursor_estimate,
             commands::get_tray_title_mode,
             commands::set_notifications_enabled,
